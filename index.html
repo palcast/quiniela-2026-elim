@@ -191,7 +191,7 @@ body{
    TAB 1: RANKING — ultra-compact table
 ════════════════════════════════════════════════════ */
 .rank-list{padding:0;margin-top:0}
-.rank-tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.rank-tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto}
 .rank-tbl thead th{
   background:var(--surface2);
   color:var(--txt3);font-size:9px;font-weight:600;
@@ -206,13 +206,13 @@ body{
 .rank-tbl tbody tr.is-me td{background:var(--blue-dim)!important}
 .rank-tbl tbody tr.is-me .rtd-name{color:var(--blue);font-weight:700}
 .rtd-pos{padding:4px 3px;width:22px;font-size:10px;color:var(--txt3);text-align:center;flex-shrink:0}
-.rtd-name{padding:4px 4px;font-size:12px;font-weight:500;color:var(--txt);white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis}
+.rtd-name{padding:4px 4px;font-size:12px;font-weight:500;color:var(--txt);white-space:nowrap;width:72px;min-width:72px;max-width:72px;overflow:hidden;text-overflow:ellipsis}
 .rtd-num{padding:4px 4px;text-align:center;font-size:12px;font-weight:700;white-space:nowrap;width:36px}
 .rtd-pts{color:var(--amber)}
 .rtd-m{color:var(--txt2)}
 .rtd-b{color:#5B7BA8}
-.rtd-bar{padding:4px 8px 4px 4px;width:100%}
-.bar-cell{width:100%;height:7px;background:var(--border);border-radius:0;overflow:hidden}
+.rtd-bar{padding:4px 8px 4px 4px}
+.bar-cell{width:100%;min-width:60px;height:7px;background:var(--border);border-radius:0;overflow:hidden}
 .bar-cell-fill{height:100%;border-radius:0;background:var(--amber);transition:width .3s}
 
 /* ════════════════════════════════════════════════════
@@ -314,7 +314,7 @@ body{
   padding:3px 8px;display:flex;align-items:center;gap:4px;
 }
 .bslot-my-pred-score{
-  font-weight:700;color:var(--blue);
+  font-weight:700;color:var(--amber);
 }
 .bslot-my-pred-pts{
   margin-left:auto;font-weight:700;
@@ -403,7 +403,8 @@ body{
 .preds-tbl thead th.c{text-align:center}
 .preds-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:filter .1s}
 .preds-tbl tbody tr:hover{filter:brightness(1.12)}
-.preds-tbl tbody tr.is-me td{font-weight:700}
+.preds-tbl tbody tr.is-me td{font-weight:700;background:var(--blue-dim)!important;color:var(--blue)}
+.preds-tbl tbody tr.is-me .ptd-name{color:var(--blue)!important}
 .preds-tbl tbody tr.pred-local td{background:#1E222A}
 .preds-tbl tbody tr.pred-empate td{background:#191C22}
 .preds-tbl tbody tr.pred-visitor td{background:#171A20}
@@ -568,11 +569,11 @@ body{
           <thead>
             <tr>
               <th style="width:22px;text-align:center">#</th>
-              <th>Participante</th>
+              <th style="width:72px">Participante</th>
               <th class="num" style="color:var(--amber);text-align:center;width:36px">Total</th>
               <th class="num" style="color:var(--txt2);text-align:center;width:36px">Marc</th>
               <th class="num" style="color:#5B7BA8;text-align:center;width:36px">Bon</th>
-              <th style="width:88px"></th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="rank-tbody"></tbody>
@@ -944,19 +945,22 @@ function renderBracket(){
 
       const slot=document.createElement('div');
       slot.className=`bslot${played?' played':' pending'}`;
-      if(m) slot.onclick=()=>{document.getElementById('match-sel').value=m.id;switchTab('partido',document.getElementById('nav-partido'));renderMatchDetail();};
+      slot.style.cursor='pointer';
+      if(m){
+        slot.onclick=()=>{document.getElementById('match-sel').value=m.id;switchTab('partido',document.getElementById('nav-partido'));renderMatchDetail();};
+      } else {
+        slot.onclick=()=>{const sel=document.getElementById('match-sel');if(sel){sel.value=String(sid);}switchTab('partido',document.getElementById('nav-partido'));renderMatchDetail();};
+      }
       slot.innerHTML=`
         <div class="bslot-row${ganA?' winner-row':''}">
           ${teamA?`<img class="bslot-flag" src="${furl(F[teamA]||'')}" onerror="this.style.display='none'" alt="">`:'<div class="bslot-flag-ph"></div>'}
           <span class="bslot-team${!teamA?' tbd':''}">${teamA?abbr(teamA):'Por definir'}</span>
           <span class="bslot-score${!played?' pending':''}">${played?m.gl:''}</span>
-          ${ganA?'<span class="bslot-winner-crown">✓</span>':''}
         </div>
         <div class="bslot-row${ganB?' winner-row':''}">
           ${teamB?`<img class="bslot-flag" src="${furl(F[teamB]||'')}" onerror="this.style.display='none'" alt="">`:'<div class="bslot-flag-ph"></div>'}
           <span class="bslot-team${!teamB?' tbd':''}">${teamB?abbr(teamB):'Por definir'}</span>
           <span class="bslot-score${!played?' pending':''}">${played?m.gv:''}</span>
-          ${ganB?'<span class="bslot-winner-crown">✓</span>':''}
         </div>
         ${predRow}${topNRow}`;
       slots.appendChild(slot);
@@ -1314,8 +1318,8 @@ function renderStats(){
       const bg=(i%2===0)?'var(--surface)':'var(--bg)';
       return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
         <td style="padding:3px 6px;font-size:9px;color:var(--txt3);text-align:center">${i+1}</td>
-        <td style="padding:3px 6px;font-size:11px;color:var(--txt)">${flagHtml}${abbr(team)}</td>
-        <td style="padding:3px 6px"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--amber)"></div></div></td>
+        <td style="padding:3px 6px;font-size:11px;color:var(--txt);width:90px;min-width:90px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${flagHtml}${abbr(team)}</td>
+        <td style="padding:3px 6px;width:100%"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--amber)"></div></div></td>
         <td style="padding:3px 8px;text-align:right;font-size:11px;font-weight:700;color:var(--amber)">${n}</td>
       </tr>`;
     }).join('');
@@ -1323,16 +1327,19 @@ function renderStats(){
     champRows||`<tr><td colspan="4" style="padding:8px;text-align:center;color:var(--txt3);font-size:11px">Sin datos</td></tr>`);
 
   // Triunfos pronosticados por equipo (all matches, all preds — count ganador picks)
+  // Count all predicted winners across ALL match slots and ALL participants
   const winCounts={};
-  S.matches.forEach(m=>{
-    S.parts.forEach(p=>{
-      const pr=(S.preds[m.id]||{})[p.name];
+  // Get all match IDs that have any prediction
+  const allPredIds=Object.keys(S.preds);
+  allPredIds.forEach(mid=>{
+    const m=S.matches.find(x=>x.id===mid);
+    Object.values(S.preds[mid]).forEach(pr=>{
       if(!pr||pr.l===null)return;
       const diff=pr.l-pr.v;
       let winner='';
-      if(diff>0)winner=m.local;
-      else if(diff<0)winner=m.visitante;
-      else if(pr.gan)winner=pr.gan;
+      if(diff>0)winner=m?m.local:'';
+      else if(diff<0)winner=m?m.visitante:'';
+      else if(pr.gan)winner=pr.gan; // draw → use explicit ganador pick
       if(winner)winCounts[winner]=(winCounts[winner]||0)+1;
     });
   });
@@ -1345,8 +1352,8 @@ function renderStats(){
       const bg=(i%2===0)?'var(--surface)':'var(--bg)';
       return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
         <td style="padding:3px 6px;font-size:9px;color:var(--txt3);text-align:center">${i+1}</td>
-        <td style="padding:3px 6px;font-size:11px;color:var(--txt)">${flagHtml}${abbr(team)}</td>
-        <td style="padding:3px 6px"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--green)"></div></div></td>
+        <td style="padding:3px 6px;font-size:11px;color:var(--txt);width:90px;min-width:90px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${flagHtml}${abbr(team)}</td>
+        <td style="padding:3px 6px;width:100%"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--green)"></div></div></td>
         <td style="padding:3px 8px;text-align:right;font-size:11px;font-weight:700;color:var(--green)">${n}</td>
       </tr>`;
     }).join('');
