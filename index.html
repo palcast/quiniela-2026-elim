@@ -207,13 +207,13 @@ body{
 .rank-tbl tbody tr.is-me .rtd-name{color:var(--blue);font-weight:700}
 .rtd-pos{padding:4px 4px;width:26px;font-size:10px;color:var(--txt3);text-align:center}
 .rtd-name{padding:4px 4px;font-size:12px;font-weight:500;color:var(--txt)}
-.rtd-num{padding:4px 5px;text-align:right;font-size:12px;font-weight:700;white-space:nowrap}
+.rtd-num{padding:4px 5px;text-align:center;font-size:12px;font-weight:700;white-space:nowrap}
 .rtd-pts{color:var(--amber)}
 .rtd-m{color:var(--txt2)}
 .rtd-b{color:#5B7BA8}
-.rtd-bar{padding:4px 6px 4px 2px;min-width:70px;flex:1}
-.bar-cell{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.bar-cell-fill{height:100%;border-radius:2px;background:var(--amber)!important;transition:width .3s}
+.rtd-bar-cell{display:flex;align-items:center;gap:5px;padding:4px 8px 4px 2px}
+.bar-cell{flex:1;height:7px;background:var(--border);border-radius:0;overflow:hidden}
+.bar-cell-fill{height:100%;border-radius:0;background:var(--amber)!important;transition:width .3s}
 
 /* ════════════════════════════════════════════════════
    TAB 2: LLAVE (bracket)
@@ -446,7 +446,10 @@ body{
 .mq-card.correct-4{border-left:3px solid var(--amber)}
 .mq-card.correct-3{border-left:3px solid var(--green)}
 .mq-card.pending-card{opacity:.7}
-.mq-teams{flex:1;display:flex;flex-direction:column;gap:2px}
+.mq-matchup{flex:1;display:flex;align-items:center;gap:5px;min-width:0}
+.mq-tname{font-size:11px;font-weight:500;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.mq-tname-l{text-align:right}
+.mq-tname-r{text-align:left}
 .mq-team-row{display:flex;align-items:center;gap:6px}
 .mq-flag{width:14px;height:14px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);flex-shrink:0}
 .mq-flag-ph{width:14px;height:14px;border-radius:50%;background:var(--border2);flex-shrink:0}
@@ -564,16 +567,15 @@ body{
 
     <!-- TAB: RANKING -->
     <div class="tab-pane active" id="pane-ranking">
-      <div class="rank-list">
+      <div class="rank-list" style="padding:6px 10px">
         <table class="rank-tbl">
           <thead>
             <tr>
-              <th style="width:30px;text-align:center">#</th>
+              <th style="width:26px;text-align:center">#</th>
               <th>Participante</th>
-              <th class="num" style="color:var(--amber)">Total</th>
-              <th class="num" style="color:var(--txt2)">Marc.</th>
-              <th class="num" style="color:#7A8499">Bonus</th>
-              <th style="width:60px"></th>
+              <th class="num" style="color:var(--amber);text-align:center">Total</th>
+              <th class="num" style="color:var(--txt2);text-align:center">Marc.</th>
+              <th class="num" style="color:#5B7BA8;text-align:center">Bonus</th>
             </tr>
           </thead>
           <tbody id="rank-tbody"></tbody>
@@ -798,7 +800,8 @@ function populateModals(){
     const pl=m.gl!==null;
     const o=document.createElement('option');
     o.value=m.id;
-    o.textContent=`${RONDA_LBL[m.ronda]||m.ronda} · ${m.local} vs ${m.visitante}${pl?` (${m.gl}-${m.gv})`:''}`;
+    const ta=m.local||'TBD';const tb=m.visitante||'TBD';
+    o.textContent=`${RONDA_LBL[m.ronda]||m.ronda} · ${ta} vs ${tb}${pl?` (${m.gl}-${m.gv})`:''}`;
     ms2.appendChild(o);
   });
   if(prev2&&S.matches.find(m=>m.id===prev2)){ms2.value=prev2;}
@@ -869,7 +872,19 @@ function renderBracket(){
   grid.innerHTML='';
   ROUNDS.forEach(rnd=>{
     const ms=S.matches.filter(m=>m.ronda===rnd.key);
-    if(!ms.length)return;
+    if(!ms.length){
+      // Show placeholder slots for rounds not yet defined
+      const nSlots={R32:16,R16:8,QF:4,SF:2,'3P':1,F:1}[rnd.key]||2;
+      const col2=document.createElement('div');col2.className='bracket-round';
+      col2.innerHTML=`<div class="bracket-round-hdr">${rnd.label}<br><span>${rnd.bonus}</span></div>`;
+      const slots2=document.createElement('div');slots2.className='bracket-slots';
+      for(let i=0;i<nSlots;i++){
+        const ph=document.createElement('div');ph.className='bslot pending';
+        ph.innerHTML=`<div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div><div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div>`;
+        slots2.appendChild(ph);
+      }
+      col2.appendChild(slots2);grid.appendChild(col2);return;
+    }
 
     const col=document.createElement('div');
     col.className='bracket-round';
@@ -1011,11 +1026,19 @@ function renderMatchDetail(){
     const ptsTot=pm!==null&&pb!==null?pm+pb:pm;
     return{...p,l,v,diff,tot,pm,pb,ptsTot,gan:pr?pr.gan:''};
   }).sort((a,b)=>{
-    if(a.l===null&&b.l===null)return 0;
+    if(a.l===null&&b.l===null)return a.rank-b.rank;
     if(a.l===null)return 1;
     if(b.l===null)return-1;
+    // 1. Difference desc
     if(b.diff!==a.diff)return b.diff-a.diff;
-    return(b.tot||0)-(a.tot||0);
+    // 2. Total goals: asc if diff>=0, desc if diff<0
+    const dir=(a.diff>=0)?1:-1;
+    if(a.tot!==b.tot)return dir*(a.tot-b.tot);
+    // 3. Predicted ganador alphabetically
+    const ga=a.gan||'';const gb=b.gan||'';
+    if(ga!==gb)return ga.localeCompare(gb);
+    // 4. Rank in standings
+    return a.rank-b.rank;
   });
 
   const predRows=predsWithInfo.map((p)=>{
@@ -1029,16 +1052,15 @@ function renderMatchDetail(){
     }
     const diff=p.l-p.v;
     const dirCls=diff>0?'pred-local':diff===0?'pred-empate':'pred-visitor';
-    const correctCls=played?(p.pm===5?'p5-row':p.pm===4?'p4-row':p.pm===3?'p3-row':''):'';
     const ganFlag=p.gan?fimg(p.gan,14):'';
-    let ptsBadge='';
-    if(played&&p.ptsTot!==null){
+    let mBadge='',bBadge='';
+    if(played&&p.pm!==null){
       const cls=ptsClass(p.pm,p.ptsTot);
-      ptsBadge=`<span class="${cls}" style="font-size:11px;font-weight:700">+${p.pm}</span>`;
-      if(p.pb>0)ptsBadge+=`<span style="font-size:11px;color:var(--blue);font-weight:700;margin-left:3px">+${p.pb}</span>`;
+      mBadge=`<span class="${cls}" style="font-size:11px;font-weight:700">+${p.pm}</span>`;
     }
-    const mBadge=played&&p.pm!==null?`<span class="${cls}" style="font-size:11px;font-weight:700">+${p.pm}</span>`:'';
-    const bBadge=played&&p.pb>0?`<span style="font-size:11px;color:#5B7BA8;font-weight:700">+${p.pb}</span>`:'';
+    if(played&&p.pb>0){
+      bBadge=`<span style="font-size:11px;color:#5B7BA8;font-weight:700">+${p.pb}</span>`;
+    }
     return`<tr class="${isMe?'is-me':''} ${dirCls}">
       <td class="ptd ptd-rank">${p.rank}°</td>
       <td class="ptd ptd-name">${p.name}</td>
@@ -1118,7 +1140,19 @@ function renderMiQuiniela(){
 
   ROUNDS.forEach(rnd=>{
     const ms=S.matches.filter(m=>m.ronda===rnd.key);
-    if(!ms.length)return;
+    if(!ms.length){
+      // Show placeholder slots for rounds not yet defined
+      const nSlots={R32:16,R16:8,QF:4,SF:2,'3P':1,F:1}[rnd.key]||2;
+      const col2=document.createElement('div');col2.className='bracket-round';
+      col2.innerHTML=`<div class="bracket-round-hdr">${rnd.label}<br><span>${rnd.bonus}</span></div>`;
+      const slots2=document.createElement('div');slots2.className='bracket-slots';
+      for(let i=0;i<nSlots;i++){
+        const ph=document.createElement('div');ph.className='bslot pending';
+        ph.innerHTML=`<div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div><div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div>`;
+        slots2.appendChild(ph);
+      }
+      col2.appendChild(slots2);grid.appendChild(col2);return;
+    }
 
     let rndPts=0;
     const cards=ms.map(m=>{
@@ -1148,15 +1182,18 @@ function renderMiQuiniela(){
         totalBonus+=pb||0;
       }
 
+      const predScoreStr=hasPred?`${pr.l}-${pr.v}`:'—';
       return `<div class="mq-card ${cls} ${pendCls}">
-        <div class="mq-teams">
-          <div class="mq-team-row">${flagA}<div class="mq-team-name">${m.local}</div></div>
-          <div class="mq-team-row">${flagB}<div class="mq-team-name">${m.visitante}</div></div>
-        </div>
-        <div class="mq-center">
-          <div class="mq-pred${!hasPred?' pending-pred':''}">${predStr}</div>
-          <div class="mq-real">${realStr}</div>
-          ${ganChip}
+        <div class="mq-matchup">
+          <span class="mq-tname mq-tname-l">${m.local||'?'}</span>
+          ${flagA}
+          <div class="mq-center">
+            <div class="mq-pred${!hasPred?' pending-pred':''}">${predScoreStr}</div>
+            <div class="mq-real">${realStr}</div>
+            ${ganChip}
+          </div>
+          ${flagB}
+          <span class="mq-tname mq-tname-r">${m.visitante||'?'}</span>
         </div>
         <div class="mq-pts">${ptsHTML}</div>
       </div>`;
