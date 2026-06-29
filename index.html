@@ -205,15 +205,15 @@ body{
 .rank-tbl tbody tr:hover td{background:var(--surface2)!important}
 .rank-tbl tbody tr.is-me td{background:var(--blue-dim)!important}
 .rank-tbl tbody tr.is-me .rtd-name{color:var(--blue);font-weight:700}
-.rtd-pos{padding:4px 8px;width:30px;font-size:10px;color:var(--txt3);text-align:center}
-.rtd-name{padding:4px 6px;font-size:12px;font-weight:500;color:var(--txt)}
-.rtd-num{padding:4px 8px;text-align:right;font-size:12px;font-weight:700;white-space:nowrap}
+.rtd-pos{padding:4px 4px;width:26px;font-size:10px;color:var(--txt3);text-align:center}
+.rtd-name{padding:4px 4px;font-size:12px;font-weight:500;color:var(--txt)}
+.rtd-num{padding:4px 5px;text-align:right;font-size:12px;font-weight:700;white-space:nowrap}
 .rtd-pts{color:var(--amber)}
 .rtd-m{color:var(--txt2)}
-.rtd-b{color:#7A8499}
-.rtd-bar{padding:4px 8px;width:60px}
-.bar-cell{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.bar-cell-fill{height:100%;border-radius:2px;transition:width .3s}
+.rtd-b{color:#5B7BA8}
+.rtd-bar{padding:4px 6px 4px 2px;min-width:70px;flex:1}
+.bar-cell{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bar-cell-fill{height:100%;border-radius:2px;background:var(--amber)!important;transition:width .3s}
 
 /* ════════════════════════════════════════════════════
    TAB 2: LLAVE (bracket)
@@ -404,12 +404,10 @@ body{
 .preds-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:filter .1s}
 .preds-tbl tbody tr:hover{filter:brightness(1.12)}
 .preds-tbl tbody tr.is-me td{font-weight:700}
-.preds-tbl tbody tr.pred-local td{background:rgba(59,130,246,.05)}
-.preds-tbl tbody tr.pred-empate td{background:rgba(100,116,139,.06)}
-.preds-tbl tbody tr.pred-visitor td{background:rgba(245,158,11,.04)}
-.preds-tbl tbody tr.p5-row td{border-left:2px solid var(--red)}
-.preds-tbl tbody tr.p4-row td{border-left:2px solid var(--amber)}
-.preds-tbl tbody tr.p3-row td{border-left:2px solid var(--green)}
+.preds-tbl tbody tr.pred-local td{background:#1E222A}
+.preds-tbl tbody tr.pred-empate td{background:#191C22}
+.preds-tbl tbody tr.pred-visitor td{background:#171A20}
+
 .ptd{padding:3px 6px;vertical-align:middle}
 .ptd-rank{color:var(--txt3);font-size:9px;width:22px;text-align:center}
 .ptd-name{font-size:11px;color:var(--txt);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -839,7 +837,7 @@ function renderRanking(){
   tbody.innerHTML=S.parts.map(p=>{
     const isMe=p.name===S.me;
     const barPct=Math.round((p.pts/maxPts)*100);
-    const barColor=isMe?'var(--blue)':'var(--border2)';
+    const barColor='var(--amber)';
     const medal=medals[p.rank]||'';
     return`<tr class="${isMe?'is-me':''}" onclick="setMe('${p.name}');renderRanking()">
       <td class="rtd-pos">${medal||p.rank+'°'}</td>
@@ -897,7 +895,7 @@ function renderBracket(){
       let predRow='';
       if(hasPred){
         const mCls=pm!==null?(pm===5?'pts-5':pm===4?'pts-4':pm>=3?'pts-3':'pts-0'):'';
-        const mStr=played&&pm!==null?`<span class="bslot-my-pred-pts ${mCls}">${pm}</span>`:'';
+        const mStr=played&&pm!==null?`<span class="${mCls}" style="font-size:9px;font-weight:700">+${pm}</span>`:'';
         const bStr=played&&pb>0?`<span style="font-size:9px;color:var(--blue);font-weight:700;margin-left:2px">+${pb}</span>`:'';
         predRow=`<div class="bslot-my-pred">
           <span style="color:var(--txt3);font-size:8px">👤</span>
@@ -910,14 +908,14 @@ function renderBracket(){
       // Top 3 predictions for pending matches
       let top3Row='';
       if(!played){
-        const top3=S.parts.filter(p=>p.rank<=3).map(p=>{
+        const top3Lines=S.parts.filter(p=>p.rank<=3).map(p=>{
           const pr2=(S.preds[m.id]||{})[p.name];
           if(!pr2||pr2.l===null)return'';
           const medal2=p.rank===1?'🥇':p.rank===2?'🥈':'🥉';
-          const ganStr=pr2.gan?` <span style="color:var(--txt3)">${pr2.gan.substring(0,6)}</span>`:'';
-          return `<span style="margin-right:6px">${medal2}<span style="color:var(--txt2);font-size:9px;font-weight:600">${pr2.l}-${pr2.v}</span>${ganStr}</span>`;
+          const ganStr=pr2.gan?`<span style="color:var(--txt3);margin-left:3px">${pr2.gan.substring(0,7)}</span>`:'';
+          return `<div style="display:flex;align-items:center;gap:3px">${medal2}<span style="color:var(--txt2);font-weight:600">${pr2.l}-${pr2.v}</span>${ganStr}</div>`;
         }).filter(Boolean).join('');
-        if(top3)top3Row=`<div style="font-size:8px;color:var(--txt3);border-top:1px solid var(--border);padding:3px 8px;display:flex;flex-wrap:wrap;gap:2px">${top3}</div>`;
+        if(top3Lines)top3Row=`<div style="font-size:8px;border-top:1px solid var(--border);padding:3px 8px;display:flex;flex-direction:column;gap:2px">${top3Lines}</div>`;
       }
 
       const slot=document.createElement('div');
@@ -1026,8 +1024,7 @@ function renderMatchDetail(){
       return`<tr class="${isMe?'is-me':''}">
         <td class="ptd ptd-rank">${p.rank}°</td>
         <td class="ptd ptd-name">${p.name}</td>
-        <td class="ptd c" colspan="3"><span class="no-pred">—</span></td>
-        <td class="ptd ptd-pts c">—</td>
+        <td class="ptd c" colspan="5"><span class="no-pred">—</span></td>
       </tr>`;
     }
     const diff=p.l-p.v;
@@ -1037,16 +1034,19 @@ function renderMatchDetail(){
     let ptsBadge='';
     if(played&&p.ptsTot!==null){
       const cls=ptsClass(p.pm,p.ptsTot);
-      ptsBadge=`<span class="${cls}" style="font-size:12px;font-weight:700">${p.ptsTot}</span>`;
-      if(p.pb>0)ptsBadge+=`<span style="font-size:9px;color:var(--blue);font-weight:700;margin-left:2px">+${p.pb}</span>`;
+      ptsBadge=`<span class="${cls}" style="font-size:11px;font-weight:700">+${p.pm}</span>`;
+      if(p.pb>0)ptsBadge+=`<span style="font-size:11px;color:var(--blue);font-weight:700;margin-left:3px">+${p.pb}</span>`;
     }
-    return`<tr class="${isMe?'is-me':''} ${dirCls} ${correctCls}">
+    const mBadge=played&&p.pm!==null?`<span class="${cls}" style="font-size:11px;font-weight:700">+${p.pm}</span>`:'';
+    const bBadge=played&&p.pb>0?`<span style="font-size:11px;color:#5B7BA8;font-weight:700">+${p.pb}</span>`:'';
+    return`<tr class="${isMe?'is-me':''} ${dirCls}">
       <td class="ptd ptd-rank">${p.rank}°</td>
       <td class="ptd ptd-name">${p.name}</td>
       <td class="ptd ptd-score c">${p.l}-${p.v}</td>
       <td class="ptd ptd-gan">${ganFlag}</td>
-      <td class="ptd c" style="font-size:10px;color:var(--txt3);max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.gan||''}</td>
-      <td class="ptd ptd-pts c">${ptsBadge}</td>
+      <td class="ptd" style="font-size:10px;color:var(--txt3);max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.gan||''}</td>
+      <td class="ptd c">${mBadge}</td>
+      <td class="ptd c">${bBadge}</td>
     </tr>`;
   }).join('');
 
@@ -1087,8 +1087,9 @@ function renderMatchDetail(){
             <th>Nombre</th>
             <th class="c" style="width:38px">Marcador</th>
             <th class="c" style="width:18px"></th>
-            <th style="max-width:50px;overflow:hidden">Gan.</th>
-            <th class="c" style="width:28px">Pts</th>
+            <th style="max-width:48px;overflow:hidden">Gan.</th>
+            <th class="c" style="width:28px;color:var(--txt2)">Marc</th>
+            <th class="c" style="width:28px;color:#5B7BA8">Bon.</th>
           </tr>
         </thead>
         <tbody>${predRows}</tbody>
