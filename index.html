@@ -149,33 +149,34 @@ body{
   position:absolute;inset:0;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  padding-bottom:72px; /* space for bottom nav */
+  padding-bottom:12px;
 }
 .tab-pane.active{display:block}
 .tab-pane::-webkit-scrollbar{display:none}
 
-/* ─── BOTTOM NAV ─────────────────────────────────── */
-.bottom-nav{
+/* ─── TOP NAV ────────────────────────────────────── */
+.top-nav{
   flex:0 0 auto;
   background:var(--surface);
-  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
   display:flex;
-  padding-bottom:env(safe-area-inset-bottom);
+  overflow-x:auto;
+  scrollbar-width:none;
 }
+.top-nav::-webkit-scrollbar{display:none}
 .nav-btn{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:3px;padding:8px 4px;
-  background:none;border:none;
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  gap:5px;padding:8px 14px;
+  background:none;border:none;border-bottom:2px solid transparent;
   color:var(--txt3);cursor:pointer;
   font-family:'Inter',sans-serif;
-  font-size:9px;font-weight:500;
-  letter-spacing:.03em;
-  text-transform:uppercase;
-  transition:color .15s;
+  font-size:12px;font-weight:500;
+  white-space:nowrap;
+  transition:color .15s,border-color .15s;
 }
-.nav-btn .nav-icon{font-size:18px;line-height:1}
-.nav-btn.active{color:var(--blue)}
+.nav-btn .nav-icon{font-size:14px;line-height:1}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
 .nav-btn:hover{color:var(--txt2)}
 
 /* ─── SECTION HEADER ─────────────────────────────── */
@@ -187,17 +188,17 @@ body{
 }
 
 /* ════════════════════════════════════════════════════
-   TAB 1: RANKING
+   TAB 1: RANKING — compact table
 ════════════════════════════════════════════════════ */
 .rank-hero{
-  margin:12px 16px 0;
+  margin:10px 12px 0;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:var(--r);
-  padding:16px;
+  padding:12px 14px;
 }
 .rank-hero-top{
-  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
 }
 .rh-medal{font-size:32px;line-height:1}
 .rh-info{flex:1}
@@ -217,36 +218,34 @@ body{
 .rh-bk-item:last-child{border-right:none}
 .rh-bk-val{font-size:16px;font-weight:700;color:var(--txt)}
 .rh-bk-lbl{font-size:10px;color:var(--txt3);margin-top:1px}
-.rank-list{padding:0 16px;display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.rank-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--r-sm);
-  padding:10px 14px;
-  display:flex;align-items:center;gap:12px;
-  cursor:pointer;transition:border-color .15s;
+.rank-list{padding:0 12px;margin-top:10px}
+.rank-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.rank-tbl thead th{
+  background:var(--surface2);
+  color:var(--txt3);font-size:10px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  padding:6px 10px;text-align:left;
+  border-bottom:1px solid var(--border2);
+  position:sticky;top:0;z-index:2;
 }
-.rank-card:hover{border-color:var(--border2)}
-.rank-card.is-me{
-  border-color:var(--blue);
-  background:var(--blue-dim);
+.rank-tbl thead th.num{text-align:right}
+.rank-tbl tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.rank-tbl tbody tr:hover td{background:var(--surface2)!important}
+.rank-tbl tbody tr.is-me td{background:var(--blue-dim)!important}
+.rank-tbl tbody tr.is-me .rtd-name{color:var(--blue);font-weight:700}
+.rtd-pos{
+  padding:7px 10px;width:34px;
+  font-size:11px;color:var(--txt3);text-align:center;
 }
-.rank-card.is-1{border-color:rgba(245,158,11,.4)}
-.rank-card.is-2{border-color:rgba(148,163,184,.3)}
-.rank-card.is-3{border-color:rgba(180,130,80,.3)}
-.rc-pos{
-  font-size:11px;font-weight:700;color:var(--txt3);
-  width:24px;text-align:center;flex-shrink:0;
-}
-.rc-medal{font-size:18px;width:24px;text-align:center;flex-shrink:0}
-.rc-name{flex:1;font-size:14px;font-weight:600;color:var(--txt)}
-.rank-card.is-me .rc-name{color:var(--blue)}
-.rc-right{text-align:right;flex-shrink:0}
-.rc-pts{font-size:18px;font-weight:800;color:var(--amber)}
-.rc-sub{font-size:10px;color:var(--txt3);margin-top:1px}
-.rc-bar-wrap{margin-top:6px;background:var(--border);border-radius:2px;height:3px;overflow:hidden}
-.rc-bar-fill{height:100%;border-radius:2px;background:var(--amber);transition:width .4s}
-.rank-card.is-me .rc-bar-fill{background:var(--blue)}
+.rtd-medal{font-size:14px}
+.rtd-name{padding:7px 6px;font-size:13px;font-weight:500;color:var(--txt)}
+.rtd-num{padding:7px 10px;text-align:right;font-size:13px;font-weight:700;white-space:nowrap}
+.rtd-pts{color:var(--amber)}
+.rtd-m{color:var(--txt2)}
+.rtd-b{color:var(--blue)}
+.rtd-bar{padding:7px 10px;width:70px}
+.bar-cell{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bar-cell-fill{height:100%;border-radius:2px;transition:width .3s}
 
 /* ════════════════════════════════════════════════════
    TAB 2: LLAVE (bracket)
@@ -420,36 +419,36 @@ body{
 .sbl-bar-bg{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .sbl-bar-fill{height:100%;border-radius:3px;transition:width .4s}
 .sbl-n{font-size:11px;color:var(--txt2);min-width:20px;text-align:right}
-/* Predictions list */
-.preds-list{padding:0 16px;margin-top:12px;display:flex;flex-direction:column;gap:5px}
-.pred-row{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--r-sm);
-  padding:8px 12px;
-  display:flex;align-items:center;gap:10px;
+/* Predictions table */
+.preds-list{padding:0 12px;margin-top:10px}
+.preds-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.preds-tbl thead th{
+  background:var(--surface2);
+  color:var(--txt3);font-size:10px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;
+  padding:6px 8px;text-align:left;
+  border-bottom:1px solid var(--border2);
+  position:sticky;top:0;z-index:2;
 }
-.pred-row.is-me{border-color:var(--blue);background:var(--blue-dim)}
-.pred-row.p5-row{border-left:3px solid var(--red)}
-.pred-row.p4-row{border-left:3px solid var(--amber)}
-.pred-row.p3-row{border-left:3px solid var(--green)}
-.pred-rank{font-size:10px;color:var(--txt3);width:20px;flex-shrink:0}
-.pred-name{flex:1;font-size:13px;font-weight:500;color:var(--txt)}
-.pred-row.is-me .pred-name{color:var(--blue)}
-.pred-score-chip{
-  font-size:13px;font-weight:700;color:var(--txt);
-  background:var(--score-bg);
-  border:1px solid var(--border2);
-  border-radius:4px;padding:2px 8px;
-  flex-shrink:0;
-}
-.pred-ganador{font-size:10px;color:var(--txt3);flex-shrink:0;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pred-pts-wrap{display:flex;gap:3px;flex-shrink:0;align-items:center}
-.pred-pts-badge{
-  font-size:11px;font-weight:700;
-  padding:2px 6px;border-radius:4px;
-}
-.no-pred{color:var(--txt3);font-size:12px;font-style:italic}
+.preds-tbl thead th.c{text-align:center}
+.preds-tbl tbody tr{border-bottom:1px solid var(--border);transition:filter .1s}
+.preds-tbl tbody tr:hover{filter:brightness(1.1)}
+.preds-tbl tbody tr.is-me td{font-weight:600}
+.preds-tbl tbody tr.pred-local td{background:rgba(59,130,246,.06)}
+.preds-tbl tbody tr.pred-empate td{background:rgba(100,116,139,.08)}
+.preds-tbl tbody tr.pred-visitor td{background:rgba(245,158,11,.05)}
+/* correct highlights override color */
+.preds-tbl tbody tr.p5-row td{border-left:3px solid var(--red)}
+.preds-tbl tbody tr.p4-row td{border-left:3px solid var(--amber)}
+.preds-tbl tbody tr.p3-row td{border-left:3px solid var(--green)}
+.ptd{padding:6px 8px;vertical-align:middle}
+.ptd-rank{color:var(--txt3);font-size:10px;width:26px;text-align:center}
+.ptd-name{font-size:12px;color:var(--txt);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptd-score{text-align:center;font-size:13px;font-weight:700;color:var(--txt);width:44px}
+.ptd-gan{width:22px;text-align:center}
+.ptd-pts{text-align:center;width:32px}
+.pts-badge{font-size:11px;font-weight:700;padding:2px 5px;border-radius:4px;display:inline-block}
+.no-pred{color:var(--txt3);font-style:italic;font-size:11px}
 
 /* ════════════════════════════════════════════════════
    TAB 4: MI QUINIELA
@@ -574,17 +573,48 @@ body{
     </div>
   </div>
 
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <button class="nav-btn active" id="nav-ranking" onclick="switchTab('ranking',this)">
+      <span class="nav-icon">🏆</span>Ranking
+    </button>
+    <button class="nav-btn" id="nav-llave" onclick="switchTab('llave',this)">
+      <span class="nav-icon">🗂️</span>Llave
+    </button>
+    <button class="nav-btn" id="nav-partido" onclick="switchTab('partido',this)">
+      <span class="nav-icon">🔍</span>Partido
+    </button>
+    <button class="nav-btn" id="nav-mi" onclick="switchTab('mi',this)">
+      <span class="nav-icon">👤</span>Mi Quiniela
+    </button>
+    <button class="nav-btn" id="nav-stats" onclick="switchTab('stats',this)">
+      <span class="nav-icon">📊</span>Stats
+    </button>
+  </nav>
+
   <!-- CONTENT -->
   <div class="content">
 
     <!-- TAB: RANKING -->
     <div class="tab-pane active" id="pane-ranking">
-      <div class="sec-hdr">Clasificación</div>
       <div class="rank-hero" id="rank-hero">
-        <div style="text-align:center;color:var(--txt3);font-size:12px;padding:20px">Cargando…</div>
+        <div style="text-align:center;color:var(--txt3);font-size:12px;padding:12px">Cargando…</div>
       </div>
-      <div class="sec-hdr" style="margin-top:8px">Todos los participantes</div>
-      <div class="rank-list" id="rank-list"></div>
+      <div class="rank-list">
+        <table class="rank-tbl">
+          <thead>
+            <tr>
+              <th style="width:34px;text-align:center">#</th>
+              <th>Participante</th>
+              <th class="num" style="color:var(--amber)">Total</th>
+              <th class="num" style="color:var(--txt2)">Marc.</th>
+              <th class="num" style="color:var(--blue)">Bonus</th>
+              <th style="width:70px"></th>
+            </tr>
+          </thead>
+          <tbody id="rank-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- TAB: LLAVE -->
@@ -626,24 +656,6 @@ body{
 
   </div><!-- /content -->
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <button class="nav-btn active" id="nav-ranking" onclick="switchTab('ranking',this)">
-      <span class="nav-icon">🏆</span>Ranking
-    </button>
-    <button class="nav-btn" id="nav-llave" onclick="switchTab('llave',this)">
-      <span class="nav-icon">🗂️</span>Llave
-    </button>
-    <button class="nav-btn" id="nav-partido" onclick="switchTab('partido',this)">
-      <span class="nav-icon">🔍</span>Partido
-    </button>
-    <button class="nav-btn" id="nav-mi" onclick="switchTab('mi',this)">
-      <span class="nav-icon">👤</span>Mi Quiniela
-    </button>
-    <button class="nav-btn" id="nav-stats" onclick="switchTab('stats',this)">
-      <span class="nav-icon">📊</span>Stats
-    </button>
-  </nav>
 
 </div><!-- /app -->
 
@@ -857,54 +869,40 @@ function renderRanking(){
   const medals={1:'🥇',2:'🥈',3:'🥉'};
   const maxPts=Math.max(...S.parts.map(p=>p.pts),1);
 
-  // Hero card
+  // Hero card — compact
   const hero=document.getElementById('rank-hero');
   if(me){
     hero.innerHTML=`
       <div class="rank-hero-top">
-        <div class="rh-medal">${medals[me.rank]||`${me.rank}°`}</div>
+        <div class="rh-medal">${medals[me.rank]||`<span style="font-size:16px;font-weight:800;color:var(--txt2)">${me.rank}°</span>`}</div>
         <div class="rh-info">
           <div class="rh-name">${me.name}</div>
-          <div class="rh-pts">${me.pts} <span style="font-size:14px;color:var(--txt3)">pts</span></div>
-          <div class="rh-sub">Lugar ${me.rank}° de ${S.parts.length}</div>
+          <div class="rh-sub">${me.rank}° de ${S.parts.length} · ${S.matches.filter(m=>m.gl!==null).length} partidos jugados</div>
         </div>
-      </div>
-      <div class="rh-breakdown">
-        <div class="rh-bk-item">
-          <div class="rh-bk-val" style="color:var(--amber)">${me.pts}</div>
-          <div class="rh-bk-lbl">Total</div>
-        </div>
-        <div class="rh-bk-item">
-          <div class="rh-bk-val">${me.pm}</div>
-          <div class="rh-bk-lbl">Marcador</div>
-        </div>
-        <div class="rh-bk-item">
-          <div class="rh-bk-val" style="color:var(--blue)">${me.pb}</div>
-          <div class="rh-bk-lbl">Bonus</div>
+        <div style="text-align:right">
+          <div class="rh-pts">${me.pts}</div>
+          <div style="font-size:10px;color:var(--txt3)">M:${me.pm} · B:<span style="color:var(--blue)">${me.pb}</span></div>
         </div>
       </div>`;
   } else {
-    hero.innerHTML=`<div style="text-align:center;color:var(--txt3);font-size:12px;padding:16px">Selecciona tu nombre para ver tu posición.</div>`;
+    hero.innerHTML=`<div style="text-align:center;color:var(--txt3);font-size:12px;padding:10px">Selecciona tu nombre para ver tu posición.</div>`;
   }
 
-  // List
-  const list=document.getElementById('rank-list');
-  list.innerHTML=S.parts.map(p=>{
+  // Table
+  const tbody=document.getElementById('rank-tbody');
+  tbody.innerHTML=S.parts.map(p=>{
     const isMe=p.name===S.me;
     const barPct=Math.round((p.pts/maxPts)*100);
-    const cls=`rank-card${isMe?' is-me':''}${p.rank===1?' is-1':p.rank===2?' is-2':p.rank===3?' is-3':''}`;
-    return `<div class="${cls}" onclick="setMe('${p.name}');renderRanking()">
-      <div class="rc-medal">${medals[p.rank]||''}</div>
-      <div class="${medals[p.rank]?'':'rc-pos'}">${medals[p.rank]?'':p.rank+'°'}</div>
-      <div class="rc-name">${p.name}</div>
-      <div class="rc-right">
-        <div class="rc-pts">${p.pts}</div>
-        <div class="rc-sub">M:${p.pm} B:${p.pb}</div>
-      </div>
-    </div>
-    <div style="padding:0 0 2px 60px;margin-top:-3px;margin-bottom:2px">
-      <div class="rc-bar-wrap" style="margin:0"><div class="rc-bar-fill${isMe?'':''}" style="width:${barPct}%;background:${isMe?'var(--blue)':'var(--border2)'}"></div></div>
-    </div>`;
+    const barColor=isMe?'var(--blue)':'var(--border2)';
+    const medal=medals[p.rank]||'';
+    return`<tr class="${isMe?'is-me':''}" onclick="setMe('${p.name}');renderRanking()">
+      <td class="rtd-pos">${medal||p.rank+'°'}</td>
+      <td class="ptd rtd-name">${p.name}</td>
+      <td class="rtd-num rtd-pts">${p.pts}</td>
+      <td class="rtd-num rtd-m">${p.pm}</td>
+      <td class="rtd-num rtd-b">${p.pb}</td>
+      <td class="rtd-bar"><div class="bar-cell"><div class="bar-cell-fill" style="width:${barPct}%;background:${barColor}"></div></div></td>
+    </tr>`;
   }).join('');
 }
 
@@ -1004,7 +1002,6 @@ function renderMatchDetail(){
   const played=m.gl!==null;
   const parts=S.parts;
 
-  // Score HTML
   const scoreHTML=played
     ?`<div class="mdh-score">${m.gl} — ${m.gv}</div>`
     :`<div class="mdh-score pending">vs</div>`;
@@ -1012,15 +1009,12 @@ function renderMatchDetail(){
     ?`<div class="mdh-winner">✓ ${m.ganador} avanza <span style="color:var(--blue)">+${m.ptsExtra}pts</span></div>`
     :'';
 
-  // Result counts
   let cL=0,cE=0,cV=0;
-  const winCounts={};
   parts.forEach(p=>{
     const pr=(S.preds[m.id]||{})[p.name];
     if(!pr||pr.l===null)return;
     const d=pr.l-pr.v;
     if(d>0)cL++;else if(d===0)cE++;else cV++;
-    if(pr.gan)winCounts[pr.gan]=(winCounts[pr.gan]||0)+1;
   });
   const total3=cL+cE+cV||1;
   const pL=Math.round(cL/total3*100),pE=Math.round(cE/total3*100),pV=Math.round(cV/total3*100);
@@ -1035,7 +1029,7 @@ function renderMatchDetail(){
         <div class="sbl-n">${cL}</div>
       </div>
       <div class="split-bar-row">
-        <div class="sbl-icon" style="font-size:10px;color:var(--txt3)">E</div>
+        <div class="sbl-icon" style="font-size:10px;color:var(--txt3);font-weight:700">E</div>
         <div class="sbl-lbl">Empate</div>
         <div class="sbl-bar-bg"><div class="sbl-bar-fill" style="width:${pE}%;background:${realRes==='E'?'var(--green)':'var(--border2)'}"></div></div>
         <div class="sbl-n">${cE}</div>
@@ -1043,68 +1037,101 @@ function renderMatchDetail(){
       <div class="split-bar-row">
         <div class="sbl-icon">${fimg(m.visitante,14)}</div>
         <div class="sbl-lbl" style="font-size:10px">${m.visitante}</div>
-        <div class="sbl-bar-bg"><div class="sbl-bar-fill" style="width:${pV}%;background:${realRes==='V'?'var(--green)':'var(--blue)'}"></div></div>
+        <div class="sbl-bar-bg"><div class="sbl-bar-fill" style="width:${pV}%;background:${realRes==='V'?'var(--green)':'var(--amber)'}"></div></div>
         <div class="sbl-n">${cV}</div>
       </div>
     </div>`;
 
-  // Predictions list — sorted by predicted diff desc, then alphabetical
   const predsWithInfo=[...parts].map(p=>{
     const pr=(S.preds[m.id]||{})[p.name];
     const l=pr&&pr.l!==null?pr.l:null;
     const v=pr&&pr.v!==null?pr.v:null;
     const diff=l!==null?l-v:null;
+    const tot=l!==null?l+v:null;
     const pm=played&&l!==null?(pr.pm!==null?pr.pm:calcM(m.gl,m.gv,l,v)):null;
-    const pb=played&&l!==null?(pr.pb!==null?pr.pb:null):null;
-    const tot=pm!==null&&pb!==null?pm+pb:pm;
-    return{...p,l,v,diff,pm,pb,tot,gan:pr?pr.gan:''};
+    const pb=played&&l!==null?(pr.pb!==null?pr.pb:0):null;
+    const ptsTot=pm!==null&&pb!==null?pm+pb:pm;
+    return{...p,l,v,diff,tot,pm,pb,ptsTot,gan:pr?pr.gan:''};
   }).sort((a,b)=>{
     if(a.l===null&&b.l===null)return 0;
     if(a.l===null)return 1;
     if(b.l===null)return-1;
     if(b.diff!==a.diff)return b.diff-a.diff;
-    return(b.l+b.v)-(a.l+a.v);
+    return(b.tot||0)-(a.tot||0);
   });
 
-  const predRows=predsWithInfo.map((p,i)=>{
+  const predRows=predsWithInfo.map((p)=>{
     const isMe=p.name===S.me;
-    if(p.l===null)return`<div class="pred-row${isMe?' is-me':''}">
-      <div class="pred-rank">${p.rank}°</div>
-      <div class="pred-name">${p.name}</div>
-      <div class="no-pred">sin pronóstico</div>
-    </div>`;
-    const cls=ptsClass(p.pm,p.tot);
-    const bonusBadge=played&&p.pb>0?`<span class="pred-pts-badge pts-b">+${p.pb}</span>`:'';
-    const ptsBadge=played&&p.tot!==null?`<span class="pred-pts-badge ${cls}">${p.tot}</span>`:'';
-    const rowBorder=played?(p.pm===5?'p5-row':p.pm===4?'p4-row':p.pm===3?'p3-row':''):'';
-    return`<div class="pred-row${isMe?' is-me':''} ${rowBorder}">
-      <div class="pred-rank">${p.rank}°</div>
-      <div class="pred-name">${p.name}</div>
-      <div class="pred-score-chip">${p.l}-${p.v}</div>
-      ${p.gan?`<div class="pred-ganador">${p.gan}</div>`:''}
-      <div class="pred-pts-wrap">${ptsBadge}${bonusBadge}</div>
-    </div>`;
+    if(p.l===null){
+      return`<tr class="${isMe?'is-me':''}">
+        <td class="ptd ptd-rank">${p.rank}°</td>
+        <td class="ptd ptd-name">${p.name}</td>
+        <td class="ptd c" colspan="3"><span class="no-pred">—</span></td>
+        <td class="ptd ptd-pts c">—</td>
+      </tr>`;
+    }
+    const diff=p.l-p.v;
+    const dirCls=diff>0?'pred-local':diff===0?'pred-empate':'pred-visitor';
+    const correctCls=played?(p.pm===5?'p5-row':p.pm===4?'p4-row':p.pm===3?'p3-row':''):'';
+    const ganFlag=p.gan?fimg(p.gan,14):'';
+    let ptsBadge='';
+    if(played&&p.ptsTot!==null){
+      const cls=ptsClass(p.pm,p.ptsTot);
+      ptsBadge=`<span class="pts-badge ${cls}">${p.ptsTot}</span>`;
+      if(p.pb>0)ptsBadge+=`<br><span style="font-size:9px;color:var(--blue);font-weight:700">+${p.pb}</span>`;
+    }
+    return`<tr class="${isMe?'is-me':''} ${dirCls} ${correctCls}">
+      <td class="ptd ptd-rank">${p.rank}°</td>
+      <td class="ptd ptd-name">${p.name}</td>
+      <td class="ptd ptd-score c">${p.l}-${p.v}</td>
+      <td class="ptd ptd-gan">${ganFlag}</td>
+      <td class="ptd c" style="font-size:10px;color:var(--txt3);max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.gan||''}</td>
+      <td class="ptd ptd-pts c">${ptsBadge}</td>
+    </tr>`;
   }).join('');
+
+  const nConPred=predsWithInfo.filter(p=>p.l!==null).length;
 
   cont.innerHTML=`
     <div class="match-detail-hero">
-      <div class="mdh-ronda">${RONDA_LBL[m.ronda]||m.ronda} · ${m.hora||'—'}</div>
+      <div class="mdh-ronda">${RONDA_LBL[m.ronda]||m.ronda}${m.hora?' · '+m.hora:''}</div>
       <div class="mdh-teams">
         <div class="mdh-team">
-          ${F[m.local]?`<img class="mdh-flag" src="${furl(F[m.local])}" alt="${m.local}">`:'<div class="mdh-flag-ph"></div>'}
+          ${F[m.local]?`<img class="mdh-flag" src="${furl(F[m.local])}" alt="${m.local}" onerror="this.style.display='none'">`:'<div class="mdh-flag-ph"></div>'}
           <div class="mdh-team-name">${m.local}</div>
         </div>
         ${scoreHTML}
         <div class="mdh-team">
-          ${F[m.visitante]?`<img class="mdh-flag" src="${furl(F[m.visitante])}" alt="${m.visitante}">`:'<div class="mdh-flag-ph"></div>'}
+          ${F[m.visitante]?`<img class="mdh-flag" src="${furl(F[m.visitante])}" alt="${m.visitante}" onerror="this.style.display='none'">`:'<div class="mdh-flag-ph"></div>'}
           <div class="mdh-team-name">${m.visitante}</div>
         </div>
       </div>
       ${winHTML}
     </div>
     ${splitBar}
-    <div class="sec-hdr" style="margin-top:8px">Pronósticos de todos (${predsWithInfo.filter(p=>p.l!==null).length}/${parts.length})</div>
-    <div class="preds-list">${predRows}</div>`;
+    <div class="preds-list">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 4px">
+        <span style="font-size:10px;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase">Pronósticos (${nConPred}/${parts.length})</span>
+        <span style="font-size:10px;color:var(--txt3)">
+          <span style="background:rgba(59,130,246,.15);color:var(--blue);padding:1px 6px;border-radius:3px;margin-right:3px">Local</span>
+          <span style="background:rgba(100,116,139,.12);color:var(--txt2);padding:1px 6px;border-radius:3px;margin-right:3px">E</span>
+          <span style="background:rgba(245,158,11,.12);color:var(--amber);padding:1px 6px;border-radius:3px">Visit.</span>
+        </span>
+      </div>
+      <table class="preds-tbl">
+        <thead>
+          <tr>
+            <th style="width:28px;text-align:center">#</th>
+            <th>Nombre</th>
+            <th class="c" style="width:44px">Marcador</th>
+            <th class="c" style="width:22px">🏳</th>
+            <th style="max-width:54px;overflow:hidden">Ganador</th>
+            <th class="c" style="width:36px">Pts</th>
+          </tr>
+        </thead>
+        <tbody>${predRows}</tbody>
+      </table>
+    </div>`;
 }
 
 /* ════════════════════════════════════════════════
