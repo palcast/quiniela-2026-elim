@@ -191,7 +191,7 @@ body{
    TAB 1: RANKING — ultra-compact table
 ════════════════════════════════════════════════════ */
 .rank-list{padding:0;margin-top:0}
-.rank-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.rank-tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
 .rank-tbl thead th{
   background:var(--surface2);
   color:var(--txt3);font-size:9px;font-weight:600;
@@ -206,13 +206,13 @@ body{
 .rank-tbl tbody tr.is-me td{background:var(--blue-dim)!important}
 .rank-tbl tbody tr.is-me .rtd-name{color:var(--blue);font-weight:700}
 .rtd-pos{padding:4px 3px;width:22px;font-size:10px;color:var(--txt3);text-align:center;flex-shrink:0}
-.rtd-name{padding:4px 4px;font-size:12px;font-weight:500;color:var(--txt);white-space:nowrap}
+.rtd-name{padding:4px 4px;font-size:12px;font-weight:500;color:var(--txt);white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis}
 .rtd-num{padding:4px 4px;text-align:center;font-size:12px;font-weight:700;white-space:nowrap;width:36px}
 .rtd-pts{color:var(--amber)}
 .rtd-m{color:var(--txt2)}
 .rtd-b{color:#5B7BA8}
-.rtd-bar{padding:4px 8px 4px 4px}
-.bar-cell{width:80px;height:7px;background:var(--border);border-radius:0;overflow:hidden}
+.rtd-bar{padding:4px 8px 4px 4px;width:100%}
+.bar-cell{width:100%;height:7px;background:var(--border);border-radius:0;overflow:hidden}
 .bar-cell-fill{height:100%;border-radius:0;background:var(--amber);transition:width .3s}
 
 /* ════════════════════════════════════════════════════
@@ -882,55 +882,33 @@ function renderBracket(){
   grid.innerHTML='';
   ROUNDS.forEach(rnd=>{
     const ms=S.matches.filter(m=>m.ronda===rnd.key);
+    // Unified slot rendering: always render full set of slots per round
+    // Map real matches by id for lookup
     const SLOT_IDS={R32:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],R16:[17,18,19,20,21,22,23,24],QF:[25,26,27,28],SF:[29,30],'3P':[31],F:[32]};
-    if(!ms.length){
-      const slotIds=SLOT_IDS[rnd.key]||[];
-      const col2=document.createElement('div');col2.className='bracket-round';
-      col2.innerHTML=`<div class="bracket-round-hdr">${rnd.label}<br><span>${rnd.bonus}</span></div>`;
-      const slots2=document.createElement('div');slots2.className='bracket-slots';
-      slotIds.forEach(sid=>{
-        const pr2=(S.preds[String(sid)]||{})[S.me];
-        const hasPr=pr2&&pr2.l!==null;
-        const myName=S.me?`<span style="font-size:8px;color:var(--txt3);font-weight:500;margin-right:2px">${S.me}</span>`:'';
-        const predHtml=hasPr?`<div class="bslot-my-pred"><span style="color:var(--txt3);font-size:8px">👤</span>${myName}<span class="bslot-my-pred-score">${pr2.l}-${pr2.v}</span>${pr2.gan?`<span style="font-size:8px;color:var(--txt3)">${pr2.gan}</span>`:''}</div>`:'';
-        const topN={'R16':3,'QF':5,'SF':5,'3P':5,'F':5}[rnd.key]||0;
-        let topNHtml='';
-        if(topN>0){
-          const medals2={1:'🥇',2:'🥈',3:'🥉',4:'4°',5:'5°'};
-          const tLines=S.parts.filter(p=>p.rank<=topN).map(p=>{
-            const pr3=(S.preds[String(sid)]||{})[p.name];
-            if(!pr3||pr3.l===null)return'';
-            const ganStr=pr3.gan?`<span style="color:var(--txt3)">${pr3.gan.substring(0,8)}</span>`:'';
-            const nStr=`<span style="color:var(--txt3);font-size:7px;max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>`;
-            return`<div style="display:flex;align-items:center;gap:3px">${medals2[p.rank]||p.rank+'°'}${nStr}<span style="color:var(--txt2);font-weight:700">${pr3.l}-${pr3.v}</span>${ganStr}</div>`;
-          }).filter(Boolean).join('');
-          if(tLines)topNHtml=`<div style="font-size:8px;border-top:1px solid var(--border);padding:3px 8px;display:flex;flex-direction:column;gap:2px">${tLines}</div>`;
-        }
-        const ph=document.createElement('div');ph.className='bslot pending';
-        ph.innerHTML=`<div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div><div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div>${predHtml}${topNHtml}`;
-        slots2.appendChild(ph);
-      });
-      col2.appendChild(slots2);grid.appendChild(col2);return;
-    }
+    const slotIds=SLOT_IDS[rnd.key]||[];
+    const msById={};ms.forEach(m=>msById[m.id]=m);
+    const topN={'R32':0,'R16':3,'QF':5,'SF':5,'3P':5,'F':5}[rnd.key]||0;
+    const medals2={1:'🥇',2:'🥈',3:'🥉',4:'4°',5:'5°'};
 
     const col=document.createElement('div');
     col.className='bracket-round';
-
     col.innerHTML=`<div class="bracket-round-hdr">${rnd.label}<br><span>${rnd.bonus}</span></div>`;
-
     const slots=document.createElement('div');
     slots.className='bracket-slots';
 
-    ms.forEach(m=>{
-      const played=m.gl!==null;
-      const pr=(S.preds[m.id]||{})[S.me];
+    slotIds.forEach(sid=>{
+      const m=msById[String(sid)];
+      const played=m&&m.gl!==null;
+      const predId=m?m.id:String(sid);
+
+      // My prediction
+      const pr=(S.preds[predId]||{})[S.me];
       const hasPred=pr&&pr.l!==null;
       const pm=hasPred&&played?(pr.pm!==null?pr.pm:calcM(m.gl,m.gv,pr.l,pr.v)):null;
       const pb=hasPred&&played?(pr.pb!==null?pr.pb:null):null;
-      const total=pm!==null&&pb!==null?pm+pb:pm;
 
-      const teamA=m.local||'';
-      const teamB=m.visitante||'';
+      const teamA=m?m.local||'':'';
+      const teamB=m?m.visitante||'':'';
       const ganA=played&&m.ganador===teamA;
       const ganB=played&&m.ganador===teamB;
 
@@ -940,39 +918,25 @@ function renderBracket(){
         const mStr=played&&pm!==null?`<span class="${mCls}" style="font-size:9px;font-weight:700">+${pm}</span>`:'';
         const bStr=played&&pb>0?`<span style="font-size:9px;color:var(--blue);font-weight:700;margin-left:2px">+${pb}</span>`:'';
         const myName=S.me?`<span style="font-size:8px;color:var(--txt3);font-weight:500;margin-right:2px">${S.me}</span>`:'';
-        predRow=`<div class="bslot-my-pred">
-          <span style="color:var(--txt3);font-size:8px">👤</span>${myName}
-          <span class="bslot-my-pred-score">${pr.l}-${pr.v}</span>
-          ${pr.gan?`<span style="font-size:8px;color:var(--txt3)">${pr.gan}</span>`:''}
-          ${played?mStr+bStr:''}
-        </div>`;
+        predRow=`<div class="bslot-my-pred"><span style="color:var(--txt3);font-size:8px">👤</span>${myName}<span class="bslot-my-pred-score">${pr.l}-${pr.v}</span>${pr.gan?`<span style="font-size:8px;color:var(--txt3)">${pr.gan}</span>`:''}${played?mStr+bStr:''}</div>`;
       }
 
-      // Top-n predictions for pending matches (with name)
+      // Top-n for pending slots
       let topNRow='';
-      if(!played){
-        const topN={'R32':0,'R16':3,'QF':5,'SF':5,'3P':5,'F':5}[rnd.key]||0;
-        if(topN>0){
-          const medals2={1:'🥇',2:'🥈',3:'🥉',4:'4°',5:'5°'};
-          const topLines=S.parts.filter(p=>p.rank<=topN).map(p=>{
-            const pr2=(S.preds[m.id]||{})[p.name];
-            if(!pr2||pr2.l===null)return'';
-            const med=medals2[p.rank]||p.rank+'°';
-            const ganStr=pr2.gan?`<span style="color:var(--txt3)">${pr2.gan.substring(0,8)}</span>`:'';
-            const nameStr=`<span style="color:var(--txt3);font-size:7px;max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>`;
-            return`<div style="display:flex;align-items:center;gap:3px">${med}${nameStr}<span style="color:var(--txt2);font-weight:700">${pr2.l}-${pr2.v}</span>${ganStr}</div>`;
-          }).filter(Boolean).join('');
-          if(topLines)topNRow=`<div style="font-size:8px;border-top:1px solid var(--border);padding:3px 8px;display:flex;flex-direction:column;gap:2px">${topLines}</div>`;
-        }
+      if(!played&&topN>0){
+        const tLines=S.parts.filter(p=>p.rank<=topN).map(p=>{
+          const pr2=(S.preds[predId]||{})[p.name];
+          if(!pr2||pr2.l===null)return'';
+          const ganStr=pr2.gan?`<span style="color:var(--txt3)">${pr2.gan.substring(0,8)}</span>`:'';
+          const nStr=`<span style="color:var(--txt3);font-size:7px;max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>`;
+          return`<div style="display:flex;align-items:center;gap:3px">${medals2[p.rank]||p.rank+'°'}${nStr}<span style="color:var(--txt2);font-weight:700">${pr2.l}-${pr2.v}</span>${ganStr}</div>`;
+        }).filter(Boolean).join('');
+        if(tLines)topNRow=`<div style="font-size:8px;border-top:1px solid var(--border);padding:3px 8px;display:flex;flex-direction:column;gap:2px">${tLines}</div>`;
       }
 
       const slot=document.createElement('div');
       slot.className=`bslot${played?' played':' pending'}`;
-      slot.onclick=()=>{
-        document.getElementById('match-sel').value=m.id;
-        switchTab('partido',document.getElementById('nav-partido'));
-        renderMatchDetail();
-      };
+      if(m) slot.onclick=()=>{document.getElementById('match-sel').value=m.id;switchTab('partido',document.getElementById('nav-partido'));renderMatchDetail();};
       slot.innerHTML=`
         <div class="bslot-row${ganA?' winner-row':''}">
           ${teamA?`<img class="bslot-flag" src="${furl(F[teamA]||'')}" onerror="this.style.display='none'" alt="">`:'<div class="bslot-flag-ph"></div>'}
@@ -1007,10 +971,25 @@ function renderMatchDetail(){
     // Synthetic slot — show stub with predictions only
     cont.innerHTML=`<div class="match-detail-hero"><div class="mdh-ronda" style="margin-bottom:8px">Partido aún no definido</div><div style="text-align:center;color:var(--txt3);font-size:12px">Los equipos se definirán conforme avance el torneo.</div></div>`;
     // Show predictions for this id
-    const pRows=S.parts.map((p,i)=>{
+    const stubParts=[...S.parts].map(p=>{
       const pr=(S.preds[id]||{})[p.name];
-      if(!pr||pr.l===null)return`<tr><td class="ptd ptd-rank">${p.rank}°</td><td class="ptd ptd-name">${p.name}</td><td class="ptd c" colspan="5"><span class="no-pred">—</span></td></tr>`;
-      return`<tr class="${S.me===p.name?'is-me':''}"><td class="ptd ptd-rank">${p.rank}°</td><td class="ptd ptd-name">${p.name}</td><td class="ptd ptd-score c">${pr.l}-${pr.v}</td><td class="ptd ptd-gan">${pr.gan?fimg(pr.gan,14):''}</td><td class="ptd" style="font-size:10px;color:var(--txt3)">${pr.gan||''}</td><td class="ptd c"></td><td class="ptd c"></td></tr>`;
+      const l=pr&&pr.l!==null?pr.l:null;
+      const v=pr&&pr.v!==null?pr.v:null;
+      const diff=l!==null?l-v:null;
+      const tot=l!==null?l+v:null;
+      return{...p,l,v,diff,tot,gan:pr?pr.gan:''};
+    }).sort((a,b)=>{
+      if(a.l===null&&b.l===null)return a.rank-b.rank;
+      if(a.l===null)return 1;if(b.l===null)return-1;
+      if(b.diff!==a.diff)return b.diff-a.diff;
+      if(a.tot!==b.tot){if(a.diff>=0)return b.tot-a.tot;else return a.tot-b.tot;}
+      const ga=a.gan||'';const gb=b.gan||'';
+      if(ga!==gb)return ga.localeCompare(gb);
+      return a.rank-b.rank;
+    });
+    const pRows=stubParts.map((p)=>{
+      if(p.l===null)return`<tr><td class="ptd ptd-rank">${p.rank}°</td><td class="ptd ptd-name">${p.name}</td><td class="ptd c" colspan="5"><span class="no-pred">—</span></td></tr>`;
+      return`<tr class="${S.me===p.name?'is-me':''}"><td class="ptd ptd-rank">${p.rank}°</td><td class="ptd ptd-name">${p.name}</td><td class="ptd ptd-score c">${p.l}-${p.v}</td><td class="ptd ptd-gan">${p.gan?fimg(p.gan,14):''}</td><td class="ptd" style="font-size:10px;color:var(--txt3)">${p.gan||''}</td><td class="ptd c"></td><td class="ptd c"></td></tr>`;
     }).join('');
     cont.innerHTML+=`<div class="preds-list" style="padding:0 12px;margin-top:8px"><table class="preds-tbl"><thead><tr><th style="width:24px;text-align:center">#</th><th>Nombre</th><th class="c" style="width:38px">Marcador</th><th class="c" style="width:18px"></th><th>Gan.</th><th class="c" style="width:28px">Marc</th><th class="c" style="width:28px">Bon</th></tr></thead><tbody>${pRows}</tbody></table></div>`;
     return;
@@ -1074,10 +1053,13 @@ function renderMatchDetail(){
     if(a.l===null)return 1;
     if(b.l===null)return-1;
     // 1. Difference desc
+    // 1. Difference desc
     if(b.diff!==a.diff)return b.diff-a.diff;
-    // 2. Total goals: asc if diff>=0, desc if diff<0
-    const dir=(a.diff>=0)?1:-1;
-    if(a.tot!==b.tot)return dir*(a.tot-b.tot);
+    // 2. Total goals: desc if diff>=0, asc if diff<0
+    if(a.tot!==b.tot){
+      if(a.diff>=0)return b.tot-a.tot;  // higher total first
+      else return a.tot-b.tot;           // lower total first
+    }
     // 3. Predicted ganador alphabetically
     const ga=a.gan||'';const gb=b.gan||'';
     if(ga!==gb)return ga.localeCompare(gb);
