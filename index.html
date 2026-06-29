@@ -534,11 +534,10 @@ body{
   <!-- TOP BAR -->
   <div class="topbar">
     <div class="topbar-title">🏆 <span>Mundial</span> 2026</div>
-    <div class="topbar-pills">
-      <div class="tpill">⚽ <strong id="h-played">—</strong> jugados</div>
-      <div class="tpill">⏳ <strong id="h-pend">—</strong> pendientes</div>
-    </div>
-    <div class="topbar-right">
+    <div class="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:auto">
+      <select id="part-sel-top" style="background:var(--surface2);border:1px solid var(--border2);color:var(--txt);padding:4px 8px;font-family:Inter,sans-serif;font-size:12px;border-radius:4px;outline:none;max-width:140px" onchange="setMe(this.value)">
+        <option value="">Participante…</option>
+      </select>
       <button class="refresh-btn" id="refresh-btn" onclick="loadData()" title="Actualizar">↻</button>
     </div>
   </div>
@@ -546,18 +545,15 @@ body{
   <!-- TOP NAV -->
   <nav class="top-nav">
     <button class="nav-btn active" id="nav-ranking" onclick="switchTab('ranking',this)">
-      <span class="nav-icon">🏆</span>Ranking
+      <span class="nav-icon">🥇</span>Ranking
     </button>
     <button class="nav-btn" id="nav-llave" onclick="switchTab('llave',this)">
-      <span class="nav-icon">🗂️</span>Llave
+      <span class="nav-icon">🏆</span>Llave
     </button>
     <button class="nav-btn" id="nav-partido" onclick="switchTab('partido',this)">
-      <span class="nav-icon">🔍</span>Partido
+      <span class="nav-icon">⚽</span>Partido
     </button>
-    <button class="nav-btn" id="nav-mi" onclick="switchTab('mi',this)">
-      <span class="nav-icon">👤</span>Mi Quiniela
-    </button>
-    <button class="nav-btn" id="nav-stats" onclick="switchTab('stats',this)">
+<button class="nav-btn" id="nav-stats" onclick="switchTab('stats',this)">
       <span class="nav-icon">📊</span>Stats
     </button>
   </nav>
@@ -605,15 +601,7 @@ body{
       <div id="match-detail-content"></div>
     </div>
 
-    <!-- TAB: MI QUINIELA -->
-    <div class="tab-pane" id="pane-mi">
-      <div class="sec-hdr">Mis pronósticos</div>
-      <div id="mi-content">
-        <div style="text-align:center;color:var(--txt3);font-size:12px;padding:30px">Selecciona tu nombre para ver tus pronósticos.</div>
-      </div>
-    </div>
-
-    <!-- TAB: STATS -->
+<!-- TAB: STATS -->
     <div class="tab-pane" id="pane-stats">
       <div class="sec-hdr">Estadísticas</div>
       <div class="stats-grid" id="stats-content">
@@ -758,9 +746,6 @@ async function loadData(){
       };
     });
 
-    document.getElementById('h-played').textContent=S.matches.filter(m=>m.gl!==null).length;
-    document.getElementById('h-pend').textContent=S.matches.filter(m=>m.gl===null).length;
-
     populateModals();
     rerender();
 
@@ -787,7 +772,16 @@ async function loadData(){
   document.getElementById('refresh-btn').classList.remove('spinning');
 }
 
+function populateTopSel(){
+  const sel=document.getElementById('part-sel-top');
+  if(!sel)return;
+  const prev=S.me||sel.value;
+  sel.innerHTML='<option value="">Participante…</option>';
+  S.parts.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name+(p.rank<=3?' '+(p.rank===1?'🥇':p.rank===2?'🥈':'🥉'):'');sel.appendChild(o);});
+  if(prev&&S.parts.find(p=>p.name===prev))sel.value=prev;
+}
 function populateModals(){
+  populateTopSel();
   const ms=document.getElementById('modal-sel');
   const prev=ms.value;
   ms.innerHTML='<option value="">Selecciona tu nombre…</option>';
@@ -842,7 +836,6 @@ function rerender(){
   renderRanking();
   renderBracket();
   renderMatchDetail();
-  renderMiQuiniela();
   renderStats();
 }
 
@@ -889,17 +882,34 @@ function renderBracket(){
   grid.innerHTML='';
   ROUNDS.forEach(rnd=>{
     const ms=S.matches.filter(m=>m.ronda===rnd.key);
+    const SLOT_IDS={R32:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],R16:[17,18,19,20,21,22,23,24],QF:[25,26,27,28],SF:[29,30],'3P':[31],F:[32]};
     if(!ms.length){
-      // Show placeholder slots for rounds not yet defined
-      const nSlots={R32:16,R16:8,QF:4,SF:2,'3P':1,F:1}[rnd.key]||2;
+      const slotIds=SLOT_IDS[rnd.key]||[];
       const col2=document.createElement('div');col2.className='bracket-round';
       col2.innerHTML=`<div class="bracket-round-hdr">${rnd.label}<br><span>${rnd.bonus}</span></div>`;
       const slots2=document.createElement('div');slots2.className='bracket-slots';
-      for(let i=0;i<nSlots;i++){
+      slotIds.forEach(sid=>{
+        const pr2=(S.preds[String(sid)]||{})[S.me];
+        const hasPr=pr2&&pr2.l!==null;
+        const myName=S.me?`<span style="font-size:8px;color:var(--txt3);font-weight:500;margin-right:2px">${S.me}</span>`:'';
+        const predHtml=hasPr?`<div class="bslot-my-pred"><span style="color:var(--txt3);font-size:8px">👤</span>${myName}<span class="bslot-my-pred-score">${pr2.l}-${pr2.v}</span>${pr2.gan?`<span style="font-size:8px;color:var(--txt3)">${pr2.gan}</span>`:''}</div>`:'';
+        const topN={'R16':3,'QF':5,'SF':5,'3P':5,'F':5}[rnd.key]||0;
+        let topNHtml='';
+        if(topN>0){
+          const medals2={1:'🥇',2:'🥈',3:'🥉',4:'4°',5:'5°'};
+          const tLines=S.parts.filter(p=>p.rank<=topN).map(p=>{
+            const pr3=(S.preds[String(sid)]||{})[p.name];
+            if(!pr3||pr3.l===null)return'';
+            const ganStr=pr3.gan?`<span style="color:var(--txt3)">${pr3.gan.substring(0,8)}</span>`:'';
+            const nStr=`<span style="color:var(--txt3);font-size:7px;max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>`;
+            return`<div style="display:flex;align-items:center;gap:3px">${medals2[p.rank]||p.rank+'°'}${nStr}<span style="color:var(--txt2);font-weight:700">${pr3.l}-${pr3.v}</span>${ganStr}</div>`;
+          }).filter(Boolean).join('');
+          if(tLines)topNHtml=`<div style="font-size:8px;border-top:1px solid var(--border);padding:3px 8px;display:flex;flex-direction:column;gap:2px">${tLines}</div>`;
+        }
         const ph=document.createElement('div');ph.className='bslot pending';
-        ph.innerHTML=`<div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div><div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div>`;
+        ph.innerHTML=`<div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div><div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div>${predHtml}${topNHtml}`;
         slots2.appendChild(ph);
-      }
+      });
       col2.appendChild(slots2);grid.appendChild(col2);return;
     }
 
@@ -929,8 +939,9 @@ function renderBracket(){
         const mCls=pm!==null?(pm===5?'pts-5':pm===4?'pts-4':pm>=3?'pts-3':'pts-0'):'';
         const mStr=played&&pm!==null?`<span class="${mCls}" style="font-size:9px;font-weight:700">+${pm}</span>`:'';
         const bStr=played&&pb>0?`<span style="font-size:9px;color:var(--blue);font-weight:700;margin-left:2px">+${pb}</span>`:'';
+        const myName=S.me?`<span style="font-size:8px;color:var(--txt3);font-weight:500;margin-right:2px">${S.me}</span>`:'';
         predRow=`<div class="bslot-my-pred">
-          <span style="color:var(--txt3);font-size:8px">👤</span>
+          <span style="color:var(--txt3);font-size:8px">👤</span>${myName}
           <span class="bslot-my-pred-score">${pr.l}-${pr.v}</span>
           ${pr.gan?`<span style="font-size:8px;color:var(--txt3)">${pr.gan}</span>`:''}
           ${played?mStr+bStr:''}
@@ -991,8 +1002,19 @@ function renderMatchDetail(){
   const id=document.getElementById('match-sel').value;
   const cont=document.getElementById('match-detail-content');
   if(!id){cont.innerHTML='';return;}
-  const m=S.matches.find(x=>x.id===id);
-  if(!m){cont.innerHTML='';return;}
+  let m=S.matches.find(x=>x.id===id);
+  if(!m){
+    // Synthetic slot — show stub with predictions only
+    cont.innerHTML=`<div class="match-detail-hero"><div class="mdh-ronda" style="margin-bottom:8px">Partido aún no definido</div><div style="text-align:center;color:var(--txt3);font-size:12px">Los equipos se definirán conforme avance el torneo.</div></div>`;
+    // Show predictions for this id
+    const pRows=S.parts.map((p,i)=>{
+      const pr=(S.preds[id]||{})[p.name];
+      if(!pr||pr.l===null)return`<tr><td class="ptd ptd-rank">${p.rank}°</td><td class="ptd ptd-name">${p.name}</td><td class="ptd c" colspan="5"><span class="no-pred">—</span></td></tr>`;
+      return`<tr class="${S.me===p.name?'is-me':''}"><td class="ptd ptd-rank">${p.rank}°</td><td class="ptd ptd-name">${p.name}</td><td class="ptd ptd-score c">${pr.l}-${pr.v}</td><td class="ptd ptd-gan">${pr.gan?fimg(pr.gan,14):''}</td><td class="ptd" style="font-size:10px;color:var(--txt3)">${pr.gan||''}</td><td class="ptd c"></td><td class="ptd c"></td></tr>`;
+    }).join('');
+    cont.innerHTML+=`<div class="preds-list" style="padding:0 12px;margin-top:8px"><table class="preds-tbl"><thead><tr><th style="width:24px;text-align:center">#</th><th>Nombre</th><th class="c" style="width:38px">Marcador</th><th class="c" style="width:18px"></th><th>Gan.</th><th class="c" style="width:28px">Marc</th><th class="c" style="width:28px">Bon</th></tr></thead><tbody>${pRows}</tbody></table></div>`;
+    return;
+  }
 
   const played=m.gl!==null;
   const parts=S.parts;
