@@ -533,7 +533,7 @@ body{
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-title">🏆 <span>Mundial</span> 2026</div>
+    <div class="topbar-title">Quiniela <span>Mundial 2026</span></div>
     <div class="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:auto">
       <select id="part-sel-top" style="background:var(--surface2);border:1px solid var(--border2);color:var(--txt);padding:4px 8px;font-family:Inter,sans-serif;font-size:12px;border-radius:4px;outline:none;max-width:140px" onchange="setMe(this.value)">
         <option value="">Participante…</option>
@@ -545,10 +545,10 @@ body{
   <!-- TOP NAV -->
   <nav class="top-nav">
     <button class="nav-btn active" id="nav-ranking" onclick="switchTab('ranking',this)">
-      <span class="nav-icon">🥇</span>Ranking
+      <span class="nav-icon">🏆</span>Ranking
     </button>
     <button class="nav-btn" id="nav-llave" onclick="switchTab('llave',this)">
-      <span class="nav-icon">🏆</span>Llave
+      <span class="nav-icon">🌎</span>Llave
     </button>
     <button class="nav-btn" id="nav-partido" onclick="switchTab('partido',this)">
       <span class="nav-icon">⚽</span>Partido
@@ -630,6 +630,12 @@ const CFG = {
 /* ════════════════════════════════════════════════
    FLAGS
 ════════════════════════════════════════════════ */
+function abbr(n){
+  if(!n)return n;
+  if(n==='Países Bajos')return'Países B';
+  if(n==='Costa de Marfil')return'Costa de M';
+  return n;
+}
 const F={
   'Sudáfrica':'za','Canadá':'ca','Brasil':'br','Japón':'jp','Alemania':'de',
   'Paraguay':'py','Países Bajos':'nl','Marruecos':'ma','Costa de Marfil':'ci',
@@ -828,7 +834,9 @@ function confirmParticipant(){
 }
 function setMe(name){
   S.me=name;
-  localStorage.setItem('quiniela_elim_me',name);
+  if(name)localStorage.setItem('quiniela_elim_me',name);
+  const top=document.getElementById('part-sel-top');
+  if(top&&top.value!==name)top.value=name;
   rerender();
 }
 
@@ -854,7 +862,7 @@ function renderRanking(){
     const medal=medals[p.rank]||'';
     return`<tr class="${isMe?'is-me':''}" onclick="setMe('${p.name}');renderRanking()">
       <td class="rtd-pos">${medal||p.rank+'°'}</td>
-      <td class="rtd-name">${p.name}</td>
+      <td class="rtd-name">${abbr(p.name)}</td>
       <td class="rtd-num rtd-pts">${p.pts}</td>
       <td class="rtd-num rtd-m">${p.pm}</td>
       <td class="rtd-num rtd-b">${p.pb}</td>
@@ -940,13 +948,13 @@ function renderBracket(){
       slot.innerHTML=`
         <div class="bslot-row${ganA?' winner-row':''}">
           ${teamA?`<img class="bslot-flag" src="${furl(F[teamA]||'')}" onerror="this.style.display='none'" alt="">`:'<div class="bslot-flag-ph"></div>'}
-          <span class="bslot-team${!teamA?' tbd':''}">${teamA||'Por definir'}</span>
+          <span class="bslot-team${!teamA?' tbd':''}">${teamA?abbr(teamA):'Por definir'}</span>
           <span class="bslot-score${!played?' pending':''}">${played?m.gl:''}</span>
           ${ganA?'<span class="bslot-winner-crown">✓</span>':''}
         </div>
         <div class="bslot-row${ganB?' winner-row':''}">
           ${teamB?`<img class="bslot-flag" src="${furl(F[teamB]||'')}" onerror="this.style.display='none'" alt="">`:'<div class="bslot-flag-ph"></div>'}
-          <span class="bslot-team${!teamB?' tbd':''}">${teamB||'Por definir'}</span>
+          <span class="bslot-team${!teamB?' tbd':''}">${teamB?abbr(teamB):'Por definir'}</span>
           <span class="bslot-score${!played?' pending':''}">${played?m.gv:''}</span>
           ${ganB?'<span class="bslot-winner-crown">✓</span>':''}
         </div>
@@ -1020,7 +1028,7 @@ function renderMatchDetail(){
     <div class="split-bar-wrap">
       <div class="split-bar-row">
         <div class="sbl-icon">${fimg(m.local,14)}</div>
-        <div class="sbl-lbl" style="font-size:10px">${m.local}</div>
+        <div class="sbl-lbl" style="font-size:10px">${abbr(m.local)}</div>
         <div class="sbl-bar-bg"><div class="sbl-bar-fill" style="width:${pL}%;background:${realRes==='L'?'var(--green)':'var(--blue)'}"></div></div>
         <div class="sbl-n">${cL}</div>
       </div>
@@ -1032,7 +1040,7 @@ function renderMatchDetail(){
       </div>
       <div class="split-bar-row">
         <div class="sbl-icon">${fimg(m.visitante,14)}</div>
-        <div class="sbl-lbl" style="font-size:10px">${m.visitante}</div>
+        <div class="sbl-lbl" style="font-size:10px">${abbr(m.visitante)}</div>
         <div class="sbl-bar-bg"><div class="sbl-bar-fill" style="width:${pV}%;background:${realRes==='V'?'var(--green)':'var(--amber)'}"></div></div>
         <div class="sbl-n">${cV}</div>
       </div>
@@ -1107,12 +1115,12 @@ function renderMatchDetail(){
         <div class="mdh-teams">
           <div class="mdh-team">
             ${F[m.local]?`<img class="mdh-flag" src="${furl(F[m.local])}" alt="${m.local}" onerror="this.style.display='none'">`:'<div class="mdh-flag-ph"></div>'}
-            <div class="mdh-team-name">${m.local}</div>
+            <div class="mdh-team-name">${abbr(m.local)}</div>
           </div>
           ${scoreHTML}
           <div class="mdh-team">
             ${F[m.visitante]?`<img class="mdh-flag" src="${furl(F[m.visitante])}" alt="${m.visitante}" onerror="this.style.display='none'">`:'<div class="mdh-flag-ph"></div>'}
-            <div class="mdh-team-name">${m.visitante}</div>
+            <div class="mdh-team-name">${abbr(m.visitante)}</div>
           </div>
         </div>
         ${winHTML}
@@ -1237,80 +1245,123 @@ function renderMiQuiniela(){
 function renderStats(){
   const cont=document.getElementById('stats-content');
   const played=S.matches.filter(m=>m.gl!==null);
-  if(!played.length){
-    cont.innerHTML='<div style="text-align:center;color:var(--txt3);font-size:12px;padding:20px">Aún no hay partidos jugados.</div>';
-    return;
+
+  // Stats helper — compact table (like ranking/partido)
+  function stTbl(title,emoji,headers,rows){
+    const hCells=headers.map(h=>`<th style="background:var(--surface2);color:var(--txt3);font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 6px;border-bottom:1px solid var(--border2);text-align:${h.right?'right':'left'};width:${h.w||'auto'}">${h.label}</th>`).join('');
+    return`<div class="stat-card" style="padding:0;overflow:hidden;margin-bottom:10px">
+      <div style="padding:8px 10px 6px;font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase">${emoji} ${title}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr>${hCells}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
   }
 
-  // Per-participant stats
+  function stRow(isMe,rank,name,val,maxVal,barColor,extra){
+    const barW=maxVal>0?Math.round((val/maxVal)*100):0;
+    const bg=isMe?'background:var(--blue-dim)!important':'';
+    return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);${bg}" class="${isMe?'is-me':''}">
+      <td style="padding:3px 6px;color:var(--txt3);font-size:9px;text-align:center">${rank}°</td>
+      <td style="padding:3px 6px;font-size:11px;font-weight:${isMe?700:500};color:${isMe?'var(--blue)':'var(--txt)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px">${name}</td>
+      <td style="padding:3px 6px"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${barW}%;background:${barColor}"></div></div></td>
+      <td style="padding:3px 8px;text-align:right;font-size:11px;font-weight:700;color:${barColor}">${val}</td>
+      ${extra||''}
+    </tr>`;
+  }
+
+  // Per-participant stats (from played matches)
   const stats=S.parts.map(p=>{
-    let exact=0,correct=0,bonus=0,tot=0,n=0;
+    let exact=0,bonus=0,tot=0;
     played.forEach(m=>{
       const pr=(S.preds[m.id]||{})[p.name];
       if(!pr||pr.l===null)return;
       const pm=pr.pm!==null?pr.pm:calcM(m.gl,m.gv,pr.l,pr.v);
       const pb=pr.pb!==null?pr.pb:0;
-      n++;
       if(pm===5)exact++;
-      if(pm>=3)correct++;
       if(pb>0)bonus++;
-      tot+=(pm||0)+(pb||0);
+      tot+=(pm||0)+pb;
     });
-    return{...p,exact,correct,bonus,tot,n};
+    return{...p,exact,bonus,tot};
   });
   const maxExact=Math.max(...stats.map(s=>s.exact),1);
   const maxBonus=Math.max(...stats.map(s=>s.bonus),1);
-  const maxCorrect=Math.max(...stats.map(s=>s.correct),1);
 
-  function statTable(title,arr,valFn,maxVal,barColor,emoji){
-    const rows=arr.map((s,i)=>{
-      const isMe=s.name===S.me;
-      const val=valFn(s);
-      const barW=Math.round((val/maxVal)*100);
-      return`<div class="stat-row${isMe?' is-me':''}">
-        <div class="stat-pos">${s.rank}°</div>
-        <div class="stat-name">${s.name}</div>
-        <div class="stat-bar-wrap"><div class="stat-bar" style="width:${barW}%;background:${barColor}"></div></div>
-        <div class="stat-val" style="color:${barColor}">${val}</div>
-      </div>`;
-    }).join('');
-    return`<div class="stat-card">
-      <div class="stat-card-title">${emoji} ${title}</div>
-      ${rows}
-    </div>`;
-  }
-
-  const byExact=[...stats].sort((a,b)=>b.exact-a.exact||a.rank-b.rank);
   const byBonus=[...stats].sort((a,b)=>b.bonus-a.bonus||a.rank-b.rank);
-  const byCorrect=[...stats].sort((a,b)=>b.correct-a.correct||a.rank-b.rank);
+  const byExact=[...stats].sort((a,b)=>b.exact-a.exact||a.rank-b.rank);
 
-  // Most predicted scores
-  const scoreCounts={};
-  played.forEach(m=>{
+  const bonusRows=byBonus.map(s=>stRow(s.name===S.me,s.rank,s.name,s.bonus,maxBonus,'var(--blue)','')).join('');
+  const exactRows=byExact.map(s=>stRow(s.name===S.me,s.rank,s.name,s.exact,maxExact,'var(--red)','')).join('');
+
+  const headers2=[{label:'#',w:'22px'},{label:'Participante'},{label:'',w:'80px'},{label:'N',right:true,w:'28px'}];
+
+  // Campeón pronosticado (use all matches, all preds)
+  const finalMatch=S.matches.find(m=>m.ronda==='F');
+  const champCounts={};
+  S.parts.forEach(p=>{
+    // Look for finalist ganador from Final match preds
+    const ids=finalMatch?[finalMatch.id]:['32'];
+    ids.forEach(fid=>{
+      const pr=(S.preds[fid]||{})[p.name];
+      if(pr&&pr.gan)champCounts[pr.gan]=(champCounts[pr.gan]||0)+1;
+    });
+  });
+  const champRows=Object.entries(champCounts).sort((a,b)=>b[1]-a[1])
+    .map(([team,n],i)=>{
+      const code=F[team]||'';
+      const flagHtml=code?`<img style="width:14px;height:14px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);vertical-align:middle;margin-right:4px" src="https://flagcdn.com/${code}.svg" onerror="this.style.display='none'" alt="">`:'';
+      const pct=Math.round(n/S.parts.length*100);
+      const bg=(i%2===0)?'var(--surface)':'var(--bg)';
+      return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
+        <td style="padding:3px 6px;font-size:9px;color:var(--txt3);text-align:center">${i+1}</td>
+        <td style="padding:3px 6px;font-size:11px;color:var(--txt)">${flagHtml}${abbr(team)}</td>
+        <td style="padding:3px 6px"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--amber)"></div></div></td>
+        <td style="padding:3px 8px;text-align:right;font-size:11px;font-weight:700;color:var(--amber)">${n}</td>
+      </tr>`;
+    }).join('');
+  const champCard=stTbl('Campeón pronosticado','🏆',[{label:'#',w:'22px'},{label:'Equipo'},{label:'',w:'80px'},{label:'N',right:true,w:'28px'}],
+    champRows||`<tr><td colspan="4" style="padding:8px;text-align:center;color:var(--txt3);font-size:11px">Sin datos</td></tr>`);
+
+  // Triunfos pronosticados por equipo (all matches, all preds — count ganador picks)
+  const winCounts={};
+  S.matches.forEach(m=>{
     S.parts.forEach(p=>{
       const pr=(S.preds[m.id]||{})[p.name];
       if(!pr||pr.l===null)return;
-      const k=`${pr.l}-${pr.v}`;
-      scoreCounts[k]=(scoreCounts[k]||0)+1;
+      const diff=pr.l-pr.v;
+      let winner='';
+      if(diff>0)winner=m.local;
+      else if(diff<0)winner=m.visitante;
+      else if(pr.gan)winner=pr.gan;
+      if(winner)winCounts[winner]=(winCounts[winner]||0)+1;
     });
   });
-  const topScores=Object.entries(scoreCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const maxSC=topScores[0]?.[1]||1;
-  const scoreCard=`<div class="stat-card">
-    <div class="stat-card-title">⚽ Marcadores más pronosticados</div>
-    ${topScores.map(([k,n])=>`<div class="stat-row">
-      <div class="stat-pos"></div>
-      <div class="stat-name" style="font-weight:700">${k}</div>
-      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${Math.round(n/maxSC*100)}%;background:var(--border2)"></div></div>
-      <div class="stat-val" style="color:var(--txt2)">${n}</div>
-    </div>`).join('')}
-  </div>`;
+  const winRows=Object.entries(winCounts).sort((a,b)=>b[1]-a[1])
+    .map(([team,n],i)=>{
+      const code=F[team]||'';
+      const flagHtml=code?`<img style="width:14px;height:14px;border-radius:50%;object-fit:cover;border:1px solid var(--border2);vertical-align:middle;margin-right:4px" src="https://flagcdn.com/${code}.svg" onerror="this.style.display='none'" alt="">`:'';
+      const maxW=Math.max(...Object.values(winCounts),1);
+      const pct=Math.round(n/maxW*100);
+      const bg=(i%2===0)?'var(--surface)':'var(--bg)';
+      return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
+        <td style="padding:3px 6px;font-size:9px;color:var(--txt3);text-align:center">${i+1}</td>
+        <td style="padding:3px 6px;font-size:11px;color:var(--txt)">${flagHtml}${abbr(team)}</td>
+        <td style="padding:3px 6px"><div style="height:5px;background:var(--border);border-radius:0;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--green)"></div></div></td>
+        <td style="padding:3px 8px;text-align:right;font-size:11px;font-weight:700;color:var(--green)">${n}</td>
+      </tr>`;
+    }).join('');
+  const winsCard=stTbl('Triunfos pronosticados (total)','⚽',[{label:'#',w:'22px'},{label:'Equipo'},{label:'',w:'80px'},{label:'N',right:true,w:'28px'}],
+    winRows||`<tr><td colspan="4" style="padding:8px;text-align:center;color:var(--txt3);font-size:11px">Sin datos</td></tr>`);
+
+  if(!played.length){
+    cont.innerHTML=champCard+winsCard;
+    return;
+  }
 
   cont.innerHTML=
-    statTable('Marcadores exactos',byExact,s=>s.exact,maxExact,'var(--red)','🎯')+
-    statTable('Aciertos bonus ganador',byBonus,s=>s.bonus,maxBonus,'var(--blue)','🏳️')+
-    statTable('Resultados correctos',byCorrect,s=>s.correct,maxCorrect,'var(--green)','✅')+
-    scoreCard;
+    stTbl('Aciertos bonus ganador','🏳️',headers2,bonusRows)+
+    stTbl('Marcadores exactos','🎯',headers2,exactRows)+
+    champCard+winsCard;
 }
 
 /* ════════════════════════════════════════════════
