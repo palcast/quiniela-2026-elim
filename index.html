@@ -1140,19 +1140,6 @@ function renderMiQuiniela(){
 
   ROUNDS.forEach(rnd=>{
     const ms=S.matches.filter(m=>m.ronda===rnd.key);
-    if(!ms.length){
-      // Show placeholder slots for rounds not yet defined
-      const nSlots={R32:16,R16:8,QF:4,SF:2,'3P':1,F:1}[rnd.key]||2;
-      const col2=document.createElement('div');col2.className='bracket-round';
-      col2.innerHTML=`<div class="bracket-round-hdr">${rnd.label}<br><span>${rnd.bonus}</span></div>`;
-      const slots2=document.createElement('div');slots2.className='bracket-slots';
-      for(let i=0;i<nSlots;i++){
-        const ph=document.createElement('div');ph.className='bslot pending';
-        ph.innerHTML=`<div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div><div class="bslot-row"><div class="bslot-flag-ph"></div><span class="bslot-team tbd">Por definir</span></div>`;
-        slots2.appendChild(ph);
-      }
-      col2.appendChild(slots2);grid.appendChild(col2);return;
-    }
 
     let rndPts=0;
     const cards=ms.map(m=>{
