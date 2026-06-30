@@ -404,9 +404,7 @@ body{
 .preds-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:filter .1s}
 .preds-tbl tbody tr:hover{filter:brightness(1.12)}
 .preds-tbl tbody tr.is-me td{background:rgba(59,130,246,.08)!important;font-weight:600}
-.preds-tbl tbody tr.pred-local td{background:#1E222A}
-.preds-tbl tbody tr.pred-empate td{background:#191C22}
-.preds-tbl tbody tr.pred-visitor td{background:#171A20}
+
 
 .ptd{padding:3px 6px;vertical-align:middle}
 .ptd-rank{color:var(--txt3);font-size:9px;width:22px;text-align:center}
@@ -551,7 +549,7 @@ body{
       <span class="nav-icon">⚽</span>Brack
     </button>
     <button class="nav-btn" id="nav-partido" onclick="switchTab('partido',this)">
-      <span class="nav-icon">📅</span>Partido
+      <span class="nav-icon">📅</span>Match
     </button>
 <button class="nav-btn" id="nav-stats" onclick="switchTab('stats',this)">
       <span class="nav-icon">📊</span>Stats
@@ -730,7 +728,7 @@ async function loadData(){
         gl,gv,
         ganador:(r.ganador||'').trim(),
         perdedor:(r.perdedor||'').trim(),
-        hora:(r.hora_inicio_utc||'').trim(),
+        hora:(r.fecha_hora_inicio||r.hora_inicio_utc||'').trim(),
         ptsExtra:parseInt(r.puntos_extra||0),
       };
     }).filter(m=>m.local);
@@ -819,7 +817,7 @@ function populateModals(){
     const tb=m?m.visitante||'TBD':'TBD';
     const o=document.createElement('option');
     o.value=m?m.id:slot.id;
-    o.textContent=`${RONDA_LBL[slot.ronda]||slot.ronda} · ${slot.code} · ${ta} vs ${tb}${pl?` (${m.gl}-${m.gv})`:''}`;
+    o.textContent=`${RONDA_LBL[slot.ronda]||slot.ronda} · ${slot.code} · ${ta} vs ${tb}${m&&m.hora?` · ${m.hora}`:''}${pl?` (${m.gl}-${m.gv})`:''}`;
     ms2.appendChild(o);
   });
   if(prev2&&S.matches.find(m=>m.id===prev2)){ms2.value=prev2;}
@@ -1117,7 +1115,7 @@ function renderMatchDetail(){
   cont.innerHTML=`
     <div class="match-top-row">
       <div class="match-detail-hero">
-        <div class="mdh-ronda">${RONDA_LBL[m.ronda]||m.ronda}</div>
+        <div class="mdh-ronda">${RONDA_LBL[m.ronda]||m.ronda}${m.hora?' · '+m.hora:''}</div>
         <div class="mdh-teams">
           <div class="mdh-team">
             ${F[m.local]?`<img class="mdh-flag" src="${furl(F[m.local])}" alt="${m.local}" onerror="this.style.display='none'">`:'<div class="mdh-flag-ph"></div>'}
@@ -1348,8 +1346,8 @@ function renderStats(){
       return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
         <td style="padding:3px 6px;font-size:9px;color:var(--txt3);text-align:center">${i+1}</td>
         <td style="padding:3px 6px;font-size:11px;color:var(--txt);width:90px;min-width:90px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${flagHtml}${abbr(team)}</td>
-        <td style="padding:3px 8px;text-align:right;font-size:12px;font-weight:700;color:#2EA870;width:28px">${n}</td>
-        <td style="padding:3px 8px 3px 2px"><div style="height:6px;background:var(--border);border-radius:0;overflow:hidden;min-width:50px"><div style="height:100%;width:${pct}%;background:#2EA870"></div></div></td>
+        <td style="padding:3px 8px;text-align:right;font-size:12px;font-weight:700;color:#C8961E;width:28px">${n}</td>
+        <td style="padding:3px 8px 3px 2px"><div style="height:6px;background:var(--border);border-radius:0;overflow:hidden;min-width:50px"><div style="height:100%;width:${pct}%;background:#C8961E"></div></div></td>
       </tr>`;
     }).join('');
   const winsCard=stTbl('Triunfos pronosticados (total)','⚽',[{label:'#',w:'22px'},{label:'Equipo'},{label:'N',right:true,w:'28px'},{label:''}],
@@ -1386,7 +1384,7 @@ function renderStats(){
   }
 
   cont.innerHTML=
-    stTbl('Aciertos bonus ganador','🏳️',headers2,bonusRows)+
+    stTbl('Aciertos a la selección ganadora','🏳️',headers2,bonusRows)+
     stTbl('Marcadores exactos','🎯',headers2,exactRows)+
     champCard+winsCard+bolsaCard;
 }
