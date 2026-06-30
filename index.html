@@ -233,6 +233,10 @@ body{
   flex:1;min-width:120px;
 }
 .bracket-round-hdr{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:var(--bg);
   text-align:center;
   font-size:9px;font-weight:700;
   color:var(--txt3);letter-spacing:.08em;
@@ -554,6 +558,9 @@ body{
 <button class="nav-btn" id="nav-stats" onclick="switchTab('stats',this)">
       <span class="nav-icon">📊</span>Stats
     </button>
+    <button class="nav-btn" id="nav-reglas" onclick="switchTab('reglas',this)" title="Reglas" style="flex:0 0 44px">
+      <span class="nav-icon" style="font-size:17px">📋</span>
+    </button>
   </nav>
 
   <!-- CONTENT -->
@@ -604,6 +611,38 @@ body{
       <div class="stats-grid" id="stats-content">
         <div style="text-align:center;color:var(--txt3);font-size:12px;padding:20px">Cargando…</div>
       </div>
+    </div>
+
+    <!-- TAB: REGLAS -->
+    <div class="tab-pane" id="pane-reglas">
+      <div style="padding:14px 14px 0">
+        <div class="stat-card" style="margin-bottom:10px">
+          <div class="stat-card-title">📋 Sistema de puntuación</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px">
+            Los marcadores participan en todas las rondas sin importar qué equipos estén jugando (se toma en cuenta la llave). El plus de irle atinando a los equipos ganadores es que dan puntos extras en cada ronda (<span style="color:var(--blue);font-weight:600">+1, +2, +3, +4, +5</span>).
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--txt3);line-height:1.6">
+            <strong style="color:var(--txt2)">Ejemplo:</strong> pusieron "Japón 2–1 México" en Semifinales, pero en esa llave juegan Brasil vs Ecuador y sale 2–1 → les da <span style="color:#A06060;font-weight:700">5 pts</span> de marcador, pero ya no ganan puntos extras por atinarle al equipo.
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Marcador exacto (90'+TE)</td><td style="padding:5px 0;text-align:right;font-weight:700;color:#A06060">5 pts</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Diferencia de goles correcta + ganador</td><td style="padding:5px 0;text-align:right;font-weight:700;color:#C8961E">4 pts</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Solo resultado correcto</td><td style="padding:5px 0;text-align:right;font-weight:700;color:#3A9468">3 pts</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Bonus · Dieciseisavos (R32)</td><td style="padding:5px 0;text-align:right;font-weight:700;color:var(--blue)">+1 pt</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Bonus · Octavos de Final</td><td style="padding:5px 0;text-align:right;font-weight:700;color:var(--blue)">+2 pts</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Bonus · Cuartos de Final</td><td style="padding:5px 0;text-align:right;font-weight:700;color:var(--blue)">+3 pts</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Bonus · Semifinales</td><td style="padding:5px 0;text-align:right;font-weight:700;color:var(--blue)">+4 pts</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--txt2)">Bonus · 3er Lugar</td><td style="padding:5px 0;text-align:right;font-weight:700;color:var(--blue)">+3 pts</td></tr>
+              <tr><td style="padding:5px 0;color:var(--txt2)">Bonus · Final (Campeón)</td><td style="padding:5px 0;text-align:right;font-weight:700;color:var(--blue)">+5 pts</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--txt3);line-height:1.6">
+            <strong style="color:var(--txt2)">Criterio de desempate:</strong> si dos o más participantes terminan con el mismo puntaje, gana quien haya acumulado más puntos solo por bonuses de equipo ganador (los +1, +2, +3, +4, +5 de cada ronda).
+          </div>
+        </div>
+      </div>
+      <div id="reglas-bolsa" style="padding:0 14px"></div>
     </div>
 
   </div><!-- /content -->
@@ -781,7 +820,8 @@ function populateTopSel(){
   if(!sel)return;
   const prev=S.me||sel.value;
   sel.innerHTML='<option value="">Participante…</option>';
-  S.parts.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=`${p.rank}° ${p.name}`;sel.appendChild(o);});
+  const medalsTop={1:'🥇',2:'🥈',3:'🥉'};
+  S.parts.forEach(p=>{const o=document.createElement('option');o.value=p.name;const posLbl=medalsTop[p.rank]||`${p.rank}°`;o.textContent=`${posLbl} ${p.name}`;sel.appendChild(o);});
   if(prev&&S.parts.find(p=>p.name===prev))sel.value=prev;
 }
 function populateModals(){
@@ -1359,35 +1399,40 @@ function renderStats(){
     return;
   }
 
-  // Bolsa (prizes)
-  const bolsaRows=S.bolsa.map((r,i)=>{
-    const medals={1:'🥇',2:'🥈',3:'🥉'};
-    const lugar=parseInt(r.lugar||i+1);
-    const monto=parseFloat(r.monto||0);
-    const bg=(i%2===0)?'var(--surface)':'var(--bg)';
-    return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
-      <td style="padding:5px 10px;font-size:13px;text-align:center">${medals[lugar]||lugar+'°'}</td>
-      <td style="padding:5px 10px;font-size:12px;font-weight:600;color:var(--txt)">${lugar}° Lugar</td>
-      <td style="padding:5px 10px;font-size:13px;font-weight:700;color:var(--amber);text-align:right">$${monto.toLocaleString('es-MX')}</td>
-    </tr>`;
-  }).join('');
-  const bolsaTotal=S.bolsa.reduce((s,r)=>s+parseFloat(r.monto||0),0);
-  const bolsaCard=`<div class="stat-card" style="padding:0;overflow:hidden;margin-bottom:10px">
-    <div style="padding:8px 10px 4px;font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase">💰 Premios · Total: <span style="color:var(--amber)">$${bolsaTotal.toLocaleString('es-MX')}</span></div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px">
-      <tbody>${bolsaRows||'<tr><td colspan="3" style="padding:8px;text-align:center;color:var(--txt3)">Sin datos</td></tr>'}</tbody>
-    </table>
-  </div>`;
+  renderBolsa();
 
   if(!played.length){
-    cont.innerHTML=champCard+winsCard+bolsaCard;
+    cont.innerHTML=champCard+winsCard;
     return;
   }
 
   cont.innerHTML=
     stTbl('Aciertos a la selección ganadora','🏳️',headers2,bonusRows)+
     stTbl('Marcadores exactos','🎯',headers2,exactRows)+
-    champCard+winsCard+bolsaCard;
+    champCard+winsCard;
+}
+
+function renderBolsa(){
+  const target=document.getElementById('reglas-bolsa');
+  if(!target)return;
+  const medals={1:'🥇',2:'🥈',3:'🥉'};
+  const bolsaRows=S.bolsa.map((r,i)=>{
+    const lugar=parseInt(r.lugar||i+1);
+    const monto=parseFloat(r.monto||0);
+    const bg=(i%2===0)?'var(--surface)':'var(--bg)';
+    return`<tr style="border-bottom:1px solid rgba(255,255,255,.03);background:${bg}">
+      <td style="padding:6px 10px;font-size:14px;text-align:center">${medals[lugar]||lugar+'°'}</td>
+      <td style="padding:6px 10px;font-size:12px;font-weight:600;color:var(--txt)">${lugar}° Lugar</td>
+      <td style="padding:6px 10px;font-size:13px;font-weight:700;color:var(--amber);text-align:right">$${monto.toLocaleString('es-MX')}</td>
+    </tr>`;
+  }).join('');
+  const bolsaTotal=S.bolsa.reduce((s,r)=>s+parseFloat(r.monto||0),0);
+  target.innerHTML=`<div class="stat-card" style="padding:0;overflow:hidden;margin-bottom:10px">
+    <div style="padding:8px 10px 4px;font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase">💰 Premios · Total: <span style="color:var(--amber)">$${bolsaTotal.toLocaleString('es-MX')}</span></div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <tbody>${bolsaRows||'<tr><td colspan="3" style="padding:8px;text-align:center;color:var(--txt3)">Sin datos</td></tr>'}</tbody>
+    </table>
+  </div>`;
 }
 
 /* ════════════════════════════════════════════════
@@ -1403,6 +1448,7 @@ function switchTab(id,btn){
   if(id==='stats')renderStats();
   if(id==='llave')renderBracket();
   if(id==='ranking')renderRanking();
+  if(id==='reglas')renderBolsa();
 }
 
 /* ════════════════════════════════════════════════
