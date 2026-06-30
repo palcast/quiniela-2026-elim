@@ -781,7 +781,7 @@ function populateTopSel(){
   if(!sel)return;
   const prev=S.me||sel.value;
   sel.innerHTML='<option value="">Participante…</option>';
-  S.parts.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name+(p.rank<=3?' '+(p.rank===1?'🥇':p.rank===2?'🥈':'🥉'):'');sel.appendChild(o);});
+  S.parts.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=`${p.rank}° ${p.name}`;sel.appendChild(o);});
   if(prev&&S.parts.find(p=>p.name===prev))sel.value=prev;
 }
 function populateModals(){
@@ -817,7 +817,7 @@ function populateModals(){
     const tb=m?m.visitante||'TBD':'TBD';
     const o=document.createElement('option');
     o.value=m?m.id:slot.id;
-    o.textContent=`${RONDA_LBL[slot.ronda]||slot.ronda} · ${slot.code} · ${ta} vs ${tb}${m&&m.hora?` · ${m.hora}`:''}${pl?` (${m.gl}-${m.gv})`:''}`;
+    o.textContent=`${RONDA_LBL[slot.ronda]||slot.ronda} · ${ta} vs ${tb}${m&&m.hora?` · ${m.hora}`:''}${pl?` (${m.gl}-${m.gv})`:''}`;
     ms2.appendChild(o);
   });
   if(prev2&&S.matches.find(m=>m.id===prev2)){ms2.value=prev2;}
@@ -923,7 +923,8 @@ function renderBracket(){
         const mCls=pm!==null?(pm===5?'pts-5':pm===4?'pts-4':pm>=3?'pts-3':'pts-0'):'';
         const mStr=played&&pm!==null?`<span class="${mCls}" style="font-size:9px;font-weight:700">+${pm}</span>`:'';
         const bStr=played&&pb>0?`<span style="font-size:9px;color:var(--blue);font-weight:700;margin-left:2px">+${pb}</span>`:'';
-        const myName=S.me?`<span style="font-size:8px;color:var(--txt3);font-weight:500;margin-right:2px">${S.me}</span>`:'';
+        // Show participant name only on PENDING matches; played matches omit the name
+        const myName=(S.me&&!played)?`<span style="font-size:8px;color:var(--txt3);font-weight:500;margin-right:2px">${S.me}</span>`:'';
         predRow=`<div class="bslot-my-pred"><span style="color:var(--txt3);font-size:8px">👤</span>${myName}<span class="bslot-my-pred-score">${pr.l}-${pr.v}</span>${pr.gan?`<span style="font-size:8px;color:var(--txt3)">${abbr(pr.gan)}</span>`:''}${played?mStr+bStr:''}</div>`;
       }
 
