@@ -273,7 +273,7 @@ body{
   padding:5px 8px;gap:6px;
   min-height:30px;
 }
-.bslot-row:first-child{border-bottom:1px solid var(--border)}
+.bslot-row+.bslot-row{border-top:1px solid var(--border)}
 .bslot-row.winner-row{background:rgba(16,185,129,.07)}
 .bslot-flag{
   width:16px;height:16px;border-radius:50%;
@@ -709,7 +709,7 @@ function ptsClass(pm,total){
 /* ════════════════════════════════════════════════
    STATE
 ════════════════════════════════════════════════ */
-const S={matches:[],parts:[],preds:{},bolsa:[],me:'',filter:'all'};
+const S={matches:[],parts:[],preds:{},bolsa:[],matchHora:{},me:'',filter:'all'};
 
 /* ════════════════════════════════════════════════
    CSV
@@ -772,6 +772,14 @@ async function loadData(){
         ptsExtra:parseInt(r.puntos_extra||0),
       };
     }).filter(m=>m.local);
+
+    // Build hora lookup for ALL match IDs (including those with undefined teams)
+    S.matchHora={};
+    mR.forEach(r=>{
+      const id=String(r.partido_id||r.id||'');
+      const hora=(r.fecha_hora_inicio||r.hora_inicio_utc||'').trim();
+      if(id&&hora)S.matchHora[id]=hora;
+    });
 
     S.preds={};
     prR.forEach(r=>{
@@ -858,7 +866,7 @@ function populateModals(){
     const tb=m?m.visitante||'TBD':'TBD';
     const o=document.createElement('option');
     o.value=m?m.id:slot.id;
-    o.textContent=`${RONDA_LBL[slot.ronda]||slot.ronda} · ${ta} vs ${tb}${m&&m.hora?` · ${m.hora}`:''}${pl?` (${m.gl}-${m.gv})`:''}`;
+    o.textContent=`${RONDA_LBL[slot.ronda]||slot.ronda}${m&&m.hora?` · ${m.hora}`:''} · ${ta} vs ${tb}${pl?` (${m.gl}-${m.gv})`:''}`;
     ms2.appendChild(o);
   });
   if(prev2&&S.matches.find(m=>m.id===prev2)){ms2.value=prev2;}
@@ -931,7 +939,7 @@ function renderBracket(){
     const ms=S.matches.filter(m=>m.ronda===rnd.key);
     // Unified slot rendering: always render full set of slots per round
     // Map real matches by id for lookup
-    const SLOT_IDS={R32:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],R16:[17,18,19,20,21,22,23,24],QF:[25,26,27,28],SF:[29,30],'3P':[31],F:[32]};
+    const SLOT_IDS={R32:[1,4,2,5,3,6,7,8,10,9,12,11,13,16,15,14],R16:[17,18,19,20,21,22,23,24],QF:[25,26,27,28],SF:[29,30],'3P':[31],F:[32]};
     const slotIds=SLOT_IDS[rnd.key]||[];
     const msById={};ms.forEach(m=>msById[m.id]=m);
     const topN={'R32':0,'R16':3,'QF':5,'SF':5,'3P':5,'F':5}[rnd.key]||0;
@@ -991,7 +999,11 @@ function renderBracket(){
       } else {
         slot.onclick=()=>{const sel=document.getElementById('match-sel');if(sel){sel.value=String(sid);}switchTab('partido',document.getElementById('nav-partido'));renderMatchDetail();};
       }
+      // Show hora for R16+ — from real match or matchHora lookup (covers undefined-team slots)
+      const hora=(rnd.key!=='R32')?((m&&m.hora)||S.matchHora[String(sid)]||''):'';
+      const horaHtml=hora?`<div style="font-size:8px;color:var(--txt3);padding:1px 8px;text-align:right;border-bottom:1px solid var(--border)">${hora}</div>`:'';
       slot.innerHTML=`
+        ${horaHtml}
         <div class="bslot-row${ganA?' winner-row':''}">
           ${teamA?`<img class="bslot-flag" src="${furl(F[teamA]||'')}" onerror="this.style.display='none'" alt="">`:'<div class="bslot-flag-ph"></div>'}
           <span class="bslot-team${!teamA?' tbd':''}">${teamA?abbr(teamA):'Por definir'}</span>
@@ -1023,7 +1035,11 @@ function renderMatchDetail(){
   let m=S.matches.find(x=>x.id===id);
   if(!m){
     // Synthetic slot — show stub with predictions only
-    cont.innerHTML=`<div class="match-detail-hero"><div class="mdh-ronda" style="margin-bottom:8px">Partido aún no definido</div><div style="text-align:center;color:var(--txt3);font-size:12px">Los equipos se definirán conforme avance el torneo.</div></div>`;
+    const stubHora=S.matchHora[id]||'';
+    const _sid=parseInt(id);
+    const _ronda=_sid<=16?'R32':_sid<=24?'R16':_sid<=28?'QF':_sid<=30?'SF':_sid===31?'3P':'F';
+    const stubRondaLbl=RONDA_LBL[_ronda]||'';
+    cont.innerHTML=`<div class="match-detail-hero"><div class="mdh-ronda">${stubRondaLbl}${stubHora?' · '+stubHora:''}</div><div style="text-align:center;color:var(--txt3);font-size:12px;margin-top:6px">Los equipos se definirán conforme avance el torneo.</div></div>`;
     // Show predictions for this id
     const stubParts=[...S.parts].map(p=>{
       const pr=(S.preds[id]||{})[p.name];
@@ -1444,6 +1460,7 @@ function renderStats(){
     {key:'R16', label:'Octavos',  matchIds:['17','18','19','20','21','22','23','24']},
     {key:'QF',  label:'Cuartos',  matchIds:['25','26','27','28']},
     {key:'SF',  label:'Semi',     matchIds:['29','30']},
+    {key:'3P',  label:'3er',      matchIds:['31']},
     {key:'F',   label:'Final',    matchIds:['32']},
   ];
 
@@ -1486,7 +1503,7 @@ function renderStats(){
     <th style="background:var(--surface2);color:var(--txt3);font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 6px;border-bottom:1px solid var(--border2);text-align:left">Participante</th>
     ${ROUNDS_LIVE.map(r=>`<th style="background:var(--surface2);color:var(--txt3);font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 4px;border-bottom:1px solid var(--border2);text-align:center">${r.label}</th>`).join('')}
   </tr>`;
-  const maxPerRound=[8,4,2,1];
+  const maxPerRound=[8,4,2,1,1];
   const liveRows=liveStats.sort((a,b)=>a.rank-b.rank).map((s,i)=>{
     const isMe=s.name===S.me;
     const bg=isMe?'background:rgba(59,130,246,.08)':((i%2===0)?'background:var(--surface)':'background:var(--bg)');
